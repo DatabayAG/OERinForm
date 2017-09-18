@@ -30,9 +30,11 @@ class ilOERinFormUIHookGUI extends ilUIHookPluginGUI
 			//case 'tabs':
 			case 'sub_tabs':
 
+				/**
+				 * Standard meta data editor is shown
+				 */
 				if ($ilCtrl->getCmdClass() == 'ilmdeditorgui')
 				{
-					$ilCtrl->saveParameterByClass('ilOERinFormGUI','ref_id');
 					$this->modifyMetaDataToolbar();
 
 					// save the tabs for reuse on the plugin pages
@@ -42,6 +44,9 @@ class ilOERinFormUIHookGUI extends ilUIHookPluginGUI
 					$_SESSION['OERinForm']['TabSubTarget'] = $ilTabs->sub_target;
 				}
 
+				/**
+				 * OERinForm page is shown
+				 */
 				if ($ilCtrl->getCmdClass()  == 'iloerinformgui')
 				{
 					// reuse the tabs that were saved from the parent gui
@@ -63,7 +68,6 @@ class ilOERinFormUIHookGUI extends ilUIHookPluginGUI
 						}
 					}
 				}
-
 				break;
 
 			default:
@@ -71,26 +75,9 @@ class ilOERinFormUIHookGUI extends ilUIHookPluginGUI
 		}
 	}
 
-
-	public function addSubTabs()
-	{
-		global $ilTabs, $ilCtrl;
-
-//		// we need to use the deprecated method because evaluation sub tabs work with automatic activation
-//		// with addSubTab the new sub tabs would always be activated
-//		$ilTabs->addSubTabTarget(
-//			$this->plugin_object->txt('oerinform'), // text is also the subtab id
-//			$ilCtrl->getLinkTargetByClass(array('ilUIPluginRouterGUI','ilOERinFormGUI'), 'show'),
-//			array('show','save'), 						// commands to be recognized for activation
-//			'ilOERinFormGUI', 				// cmdClass to be recognized activation
-//			'', 								// frame
-//			false, 							// manual activation
-//			true								// text is direct, not a language var
-//		);
-
-	}
-
-
+	/**
+	 * Modify the toolbar of the meta data editor
+	 */
 	public function modifyMetaDataToolbar()
 	{
 		$this->plugin_object->includeClass('class.ilOERinFormGUI.php');
