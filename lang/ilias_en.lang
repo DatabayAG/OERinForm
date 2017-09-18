@@ -1,0 +1,19 @@
+//
+// Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg
+// GPLv3, see LICENSE
+//
+// @author Fred Neumann <fred.neumann@fau.de>
+// @version $Id$
+//
+
+<!-- language file start -->
+publish#:#Publish
+unpublish#:#Revoke
+republish#:#Update
+label_published#:#Published:
+label_ready#:#Not Yet Published
+label_private#:#Not published, not accessible
+label_broken#:#Published, but not Accessible!
+msg_meta_published#:#The meta data are published.
+msg_meta_republished#:#The published meta data are updated.
+msg_meta_unpublished#:#The published meta data are revoked.
