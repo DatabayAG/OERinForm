@@ -65,7 +65,7 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
 		switch ($a_help_id)
 		{
 			case 'publish_oai':
-				return 2;
+				return 4;
 		}
 		return 0;
 	}
@@ -82,7 +82,7 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
 		switch ($a_help_id)
 		{
 			case 'publish_oai':
-				return 'goto.php?target=wiki_wpage_1_67';
+				return 'goto.php?target=wiki_wpage_3_71&client_id=OERinForm';
 		}
 		return 0;
 	}
