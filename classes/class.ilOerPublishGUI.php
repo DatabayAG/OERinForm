@@ -216,7 +216,7 @@ class ilOerPublishGUI extends ilOerBaseGUI
 		$this->toolbar->addSeparator();
 		$this->toolbar->addText($this->md_obj->getPublishInfo());
 
-		$this->ctrl->setParameterByClass('ilOerPublishGUI', 'return', urlencode($_SERVER['REQUEST_URI'].'?'.$_SERVER['QUERY_STRING']));
+		$this->ctrl->setParameter($this, 'return', urlencode($_SERVER['SCRIPT_NAME'].'?'.$_SERVER['QUERY_STRING']));
 
 		include_once "Services/UIComponent/Button/classes/class.ilLinkButton.php";
 		switch ($this->md_obj->getPublishStatus())
