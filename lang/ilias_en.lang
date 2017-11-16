@@ -17,3 +17,6 @@ label_broken#:#Published, but not Accessible!
 msg_meta_published#:#The meta data are published.
 msg_meta_republished#:#The published meta data are updated.
 msg_meta_unpublished#:#The published meta data are revoked.
+help#:#Help
+faq#:#Show OER-FAQ
+back#:#Back

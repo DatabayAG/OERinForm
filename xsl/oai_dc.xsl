@@ -40,7 +40,8 @@
                 <xsl:value-of select="//General/Identifier[@Catalog='ILIAS']/@Entry" />
             </dc:identifier>
             <dc:source>
-                <xsl:value-of select="//Relation[@Kind='IsBasedOn']/Resource/Description" />
+                {ILIAS_URL}
+                <!--<xsl:value-of select="//Relation[@Kind='IsBasedOn']/Resource/Description" />-->
             </dc:source>
             <dc:language>
                 <xsl:value-of select="//General/Language/@Language" />

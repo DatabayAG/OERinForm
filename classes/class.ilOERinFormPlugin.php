@@ -51,6 +51,41 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
 		global $ilUser;
 		$ilUser->writePref($this->getId().'_'.$name, $value);
 	}
+
+
+	/**
+	 * Get the id of a wiki page that can be directly shown as help
+	 * @todo: ths has to be configured
+	 *
+	 * @param string $a_help_id
+	 * @return int
+	 */
+	public function getWikiHelpPageId($a_help_id)
+	{
+		switch ($a_help_id)
+		{
+			case 'publish_oai':
+				return 2;
+		}
+		return 0;
+	}
+
+	/**
+	 * Get the url of a wiki page that can be linked for details
+	 * @todo: ths has to be configured
+	 *
+	 * @param string $a_help_id
+	 * @return int
+	 */
+	public function getWikiHelpDetailsUrl($a_help_id)
+	{
+		switch ($a_help_id)
+		{
+			case 'publish_oai':
+				return 'goto.php?target=wiki_wpage_1_67';
+		}
+		return 0;
+	}
 }
 
 ?>

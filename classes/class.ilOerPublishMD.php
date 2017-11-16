@@ -4,20 +4,23 @@
 include_once("./Services/MetaData/classes/class.ilMD.php");
  
 /**
- * Extended metadata handling for OERinForm
+ * Extended metadata for publishing OER
  *
  * @author Fred Neumann <fred.neumann@fau.de>
  * @version $Id$
  *
  */
-class ilOERinFormMD extends ilMD
+class ilOerPublishMD extends ilMD
 {
 	const STATUS_PRIVATE = 'private';
 	const STATUS_READY = 'ready';
 	const STATUS_PUBLIC = 'published';
 	const STATUS_BROKEN = 'broken';
 
-	var $publishFormats = array('oai_ilias','oai_dc','oai_lom-eaf');
+
+	/** @var array list of supported publishing formats */
+	protected $publishFormats = array('oai_ilias','oai_dc','oai_lom-eaf');
+
 
 	/** @var  ilOERinFormPlugin $plugin */
 	protected $plugin;
@@ -25,7 +28,7 @@ class ilOERinFormMD extends ilMD
 
 	/**
 	 * Inject the plugin object
-	 * (must be called aftzer constructor)
+	 * (must be called directly after construction)
 	 * @param ilOERinFormPlugin	$a_plugin
 	 */
 	public function setPlugin($a_plugin)
@@ -62,6 +65,42 @@ class ilOERinFormMD extends ilMD
 	{
 		require_once("Services/Link/classes/class.ilLink.php");
 		return ilLink::_getStaticLink($this->getPublicRefId());
+	}
+
+	/**
+	 * Get the common path of publishing files for a format
+	 * @param string $format
+	 * @return string
+	 */
+	public function getPublishPath($format)
+	{
+		return CLIENT_DATA_DIR .'/oerinf/publish/'.$format;
+	}
+
+	/**
+	 * get the full path of a publishing file for a format
+	 * @param string $format
+	 * @return string
+	 */
+	public function getPublishFile($format)
+	{
+		return $this->getPublishPath($format).'/ILIAS-'.sprintf('%09d', $this->getRBACId()).'-'.$format.'.xml';
+	}
+
+
+	/**
+	 * Get the publishing date
+	 * @return bool|int
+	 */
+	public function getPublishDate()
+	{
+		$format = $this->publishFormats[0];
+		$file = $this->getPublishFile($format);
+		if (is_file($file))
+		{
+			return filemtime($file);
+		}
+		return false;
 	}
 
 	/**
@@ -116,20 +155,6 @@ class ilOERinFormMD extends ilMD
 		}
 	}
 
-	/**
-	 * Get the publishing date
-	 * @return bool|int
-	 */
-	public function getPublishDate()
-	{
-		$format = $this->publishFormats[0];
-		$file = CLIENT_DATA_DIR .'/publish/'.$format.'/ILIAS-'.sprintf('%09d', $this->getRBACId()).'-'.$format.'.xml';
-		if (is_file($file))
-		{
-			return filemtime($file);
-		}
-		return false;
-	}
 
 	/**
 	 * Publish the object
@@ -150,8 +175,8 @@ class ilOERinFormMD extends ilMD
 
 		foreach($this->publishFormats as $format)
 		{
-			ilUtil::makeDirParents(CLIENT_DATA_DIR . '/publish/'.$format);
-			$file = CLIENT_DATA_DIR .'/publish/'.$format.'/ILIAS-'.sprintf('%09d', $this->getRBACId()).'-'. $format.'.xml';
+			ilUtil::makeDirParents($this->getPublishPath($format));
+			$file = $this->getPublishFile($format);
 			file_put_contents($file, $this->createPublishFormat($md2xml->getXML(), $format));
 		}
 		return true;
@@ -165,7 +190,7 @@ class ilOERinFormMD extends ilMD
 	{
 		foreach($this->publishFormats as $format)
 		{
-			$file = CLIENT_DATA_DIR . '/publish/' . $format . '/ILIAS-' . sprintf('%09d', $this->getRBACId()).'-'.$format.'.xml';
+			$file = $this->getPublishFile($format);
 			if ((is_file($file))) {
 				@unlink($file);
 			}
@@ -193,7 +218,8 @@ class ilOERinFormMD extends ilMD
 		$xslt->importStylesheet($xsl_doc);
 		$xml = $xslt->transformToXml($xml_doc);
 
-		$xml = str_replace('{ILIAS_URL}', $this->getPublicUrl(), $xml);
+		$xml = str_replace('{ILIAS_URL}',
+			str_replace('&','&#38;',$this->getPublicUrl()), $xml);
 
 		return $xml;
 	}
