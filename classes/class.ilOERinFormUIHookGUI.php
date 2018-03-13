@@ -47,7 +47,7 @@ class ilOERinFormUIHookGUI extends ilUIHookPluginGUI
 				}
 
 				 // OER publishing page is shown
-				if ($this->ctrl->getCmdClass()  == 'class.ilOerPublishGUI')
+				if ($this->ctrl->getCmdClass()  == 'iloerpublishgui')
 				{
 					$this->restoreTabs('ilmdeditorgui');
 				}

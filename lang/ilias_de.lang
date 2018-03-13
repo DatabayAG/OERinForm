@@ -20,3 +20,17 @@ msg_meta_unpublished#:#Die veröffentlichten Metadaten wurden zurückgezogen.
 help#:#Hilfe
 faq#:#Zum OER-FAQ
 back#:#Zurück
+wizard#:#Assistent
+wizard_finish#:#Fertigstellen
+wizard_next#:#Weiter zu Schritt %s
+wizard_previous#:#Zurück zu Schritt %s
+wizard_step#:#Schritt %s:
+guided_publish#:#Geführte Veröffentlichung
+check_licenses#:#Prüfung auf Rechte Dritter
+check_licenses_desc#:#Ihr Inhalt kann nur als OER veröffentlicht werden, wenn er frei von Rechten Dritter ist, oder die verwendenten Inhalte Dritter ebenfalls unter einer OER-Lizenz veröfentlicht sind.
+select_license#:#Festlegung einer Lizenz
+select_license_desc#:#Wählen Sie eine Linzenz, die zu den Lizensen der von Ihnen verwendeten Teile passt
+describe_meta#:#Einordnen und Beschreiben
+describe_meta_desc#:#Vergeben Sie die wichtigsten Zusatzangaben, damit Ihr Inhalt mit entsprechenden Suchfiltern gefunden wird
+declare_publish#:#Einverständniserklärung und Freigabe
+declare_publish_desc#:#Mit der folgenden Einverständniserklärung geben Sie den Inhalt ans OER frei.

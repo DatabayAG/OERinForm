@@ -11,6 +11,7 @@ require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  *
  * @ilCtrl_IsCalledBy ilOerPublishGUI: ilUIPluginRouterGUI
  * @ilCtrl_Calls ilOerPublishGUI: ilWikiPageGUI
+ * @ilCtrl_Calls ilOerPublishGUI: ilOerPublishWizardGUI
  */
 class ilOerPublishGUI extends ilOerBaseGUI
 {
@@ -31,7 +32,7 @@ class ilOerPublishGUI extends ilOerBaseGUI
 	protected $md_obj;
 
 	/**
-	 * ilUILimitedMediaControlGUI constructor.
+	 * constructor.
 	 */
 	public function __construct()
 	{
@@ -66,26 +67,39 @@ class ilOerPublishGUI extends ilOerBaseGUI
 		$this->ctrl->saveParameter($this, 'ref_id');
 		$cmd = $this->ctrl->getCmd('showHelp');
 
-		switch ($cmd)
-		{
-			case "showHelp":
-				if ($this->prepareOutput())
-				{
-					$this->$cmd();
-				}
-                break;
+		$next_class = $this->ctrl->getNextClass($this);
 
-			case "publish":
-			case "republish":
-			case "unpublish":
-				$this->$cmd();
+		switch ($next_class)
+		{
+			case 'iloerpublishwizardgui':
+				$this->prepareOutput();
+				$this->plugin->includeClass('class.ilOerPublishWizardGUI.php');
+				$pubGUI = new ilOerPublishWizardGUI();
+				$this->ctrl->forwardCommand($pubGUI);
 				break;
 
 			default:
-                ilUtil::sendFailure($this->lng->txt("permission_denied"), true);
-                ilUtil::redirect($fallback_url);
-				break;
+				switch ($cmd)
+				{
+					case "showHelp":
+						$this->prepareOutput();
+						$this->$cmd();
+						break;
+
+					case "publish":
+					case "republish":
+					case "unpublish":
+						$this->$cmd();
+						break;
+
+					default:
+						ilUtil::sendFailure($this->lng->txt("permission_denied"), true);
+						ilUtil::redirect($fallback_url);
+						break;
+				}
 		}
+
+
 	}
 
 	/**
@@ -116,8 +130,6 @@ class ilOerPublishGUI extends ilOerBaseGUI
 		$this->tpl->setTitle($this->parent_obj->getPresentationTitle());
 		$this->tpl->setDescription($this->parent_obj->getLongDescription());
 		$this->tpl->setTitleIcon(ilObject::_getIcon('', 'big', $this->parent_type), $this->lng->txt('obj_'.$this->parent_type));
-
-		return true;
 	}
 
 
@@ -247,6 +259,11 @@ class ilOerPublishGUI extends ilOerBaseGUI
 				$this->toolbar->addButtonInstance($button);
 				break;
 		}
+
+		$button = ilLinkButton::getInstance();
+		$button->setCaption($this->plugin->txt('wizard'), false);
+		$button->setUrl($this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilOerPublishGUI', 'ilOerPublishWizardGUI')));
+		$this->toolbar->addButtonInstance($button);
 
 		// try to directly show a help page
 		$page_id = $this->plugin->getWikiHelpPageId('publish_oai');
