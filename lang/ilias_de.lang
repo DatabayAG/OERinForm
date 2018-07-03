@@ -34,3 +34,7 @@ describe_meta#:#Einordnen und Beschreiben
 describe_meta_desc#:#Vergeben Sie die wichtigsten Zusatzangaben, damit Ihr Inhalt mit entsprechenden Suchfiltern gefunden wird
 declare_publish#:#Einverständniserklärung und Freigabe
 declare_publish_desc#:#Mit der folgenden Einverständniserklärung geben Sie den Inhalt ans OER frei.
+config_base#:#Grundfunktionen
+config_base_info#:#Hier stellen Sie die Grundfunktionen des Plugins ein
+wiki_ref_id#:#Hilfe-Wiki
+wiki_ref_id_info#:#Wählen Sie das importierte OERinForm-Wiki aus. Die Seiten in diesem Wiki können als Hilfeseiten bei bestimmte Funktionen eingeblendet werden.

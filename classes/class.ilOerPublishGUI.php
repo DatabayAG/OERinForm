@@ -181,7 +181,7 @@ class ilOerPublishGUI extends ilOerBaseGUI
 		$button->setUrl(htmlentities($_GET['return']));
 		$this->toolbar->addButtonInstance($button);
 
-		$url = $this->plugin->getWikiHelpDetailsUrl($a_help_id);
+		$url = $this->plugin->getHelp()->getDetailsUrl($a_help_id);
 		if (!empty($url)) {
 			$button = ilLinkButton::getInstance();
 			$button->setCaption($this->plugin->txt('faq'), false);
@@ -189,7 +189,7 @@ class ilOerPublishGUI extends ilOerBaseGUI
 			$this->toolbar->addButtonInstance($button);
 		}
 
-		$page_id = $this->plugin->getWikiHelpPageId($a_help_id);
+		$page_id = $this->plugin->getHelp()->getPageId($a_help_id);
 		if  (!empty($page_id))
 		{$tpl = $this->plugin->getTemplate('tpl.help_page.html');
 
@@ -266,7 +266,7 @@ class ilOerPublishGUI extends ilOerBaseGUI
 		$this->toolbar->addButtonInstance($button);
 
 		// try to directly show a help page
-		$page_id = $this->plugin->getWikiHelpPageId('publish_oai');
+		$page_id = $this->plugin->getHelp()->getPageId('publish_oai');
 		if (!empty($page_id))
 		{
 			$button = ilLinkButton::getInstance();
@@ -278,7 +278,7 @@ class ilOerPublishGUI extends ilOerBaseGUI
 		}
 
 		// or try to open the help url in a new window
-		$url = $this->plugin->getWikiHelpDetailsUrl('publish_oai');
+		$url = $this->plugin->getHelp()->getDetailsUrl('publish_oai');
 		if (!empty($url))
 		{
 			$button = ilLinkButton::getInstance();

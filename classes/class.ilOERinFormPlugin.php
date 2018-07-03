@@ -12,12 +12,45 @@ include_once("./Services/UIComponent/classes/class.ilUserInterfaceHookPlugin.php
  */
 class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
 {
+    /** @var ilOerInFormConfig */
+    protected $config;
 
+    /** @var ilOerInFormHelp */
+    protected $help;
 
 	public function getPluginName()
 	{
 		return "OERinForm";
 	}
+
+
+    /**
+     * Get the plugin configuration
+     * @return ilOerInFormConfig
+     */
+    public function getConfig()
+    {
+        if (!isset($this->config))
+        {
+            $this->includeClass('class.ilOerInFormConfig.php');
+            $this->config = new ilOerInformConfig($this);
+        }
+        return $this->config;
+    }
+
+    /**
+     * Get the plugin configuration
+     * @return ilOerInFormHelp
+     */
+    public function getHelp()
+    {
+        if (!isset($this->help))
+        {
+            $this->includeClass('class.ilOerInFormHelp.php');
+            $this->help = new ilOerInFormHelp($this);
+        }
+        return $this->help;
+    }
 
 
 	/**
@@ -50,41 +83,6 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
 	{
 		global $ilUser;
 		$ilUser->writePref($this->getId().'_'.$name, $value);
-	}
-
-
-	/**
-	 * Get the id of a wiki page that can be directly shown as help
-	 * @todo: ths has to be configured
-	 *
-	 * @param string $a_help_id
-	 * @return int
-	 */
-	public function getWikiHelpPageId($a_help_id)
-	{
-		switch ($a_help_id)
-		{
-			case 'publish_oai':
-				return 4;
-		}
-		return 0;
-	}
-
-	/**
-	 * Get the url of a wiki page that can be linked for details
-	 * @todo: ths has to be configured
-	 *
-	 * @param string $a_help_id
-	 * @return int
-	 */
-	public function getWikiHelpDetailsUrl($a_help_id)
-	{
-		switch ($a_help_id)
-		{
-			case 'publish_oai':
-				return 'goto.php?target=wiki_wpage_3_71&client_id=OERinForm';
-		}
-		return 0;
 	}
 }
 
