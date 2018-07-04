@@ -10,7 +10,6 @@ require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  * @version $Id$
  *
  * @ilCtrl_IsCalledBy ilOerPublishGUI: ilUIPluginRouterGUI
- * @ilCtrl_Calls ilOerPublishGUI: ilWikiPageGUI
  * @ilCtrl_Calls ilOerPublishGUI: ilOerPublishWizardGUI
  */
 class ilOerPublishGUI extends ilOerBaseGUI
@@ -81,11 +80,6 @@ class ilOerPublishGUI extends ilOerBaseGUI
 			default:
 				switch ($cmd)
 				{
-					case "showHelp":
-						$this->prepareOutput();
-						$this->$cmd();
-						break;
-
 					case "publish":
 					case "republish":
 					case "unpublish":
@@ -168,125 +162,41 @@ class ilOerPublishGUI extends ilOerBaseGUI
 	}
 
 
-	/**
-	 * Show a help page
-	 */
-	public function showHelp()
-	{
-		$a_help_id = $_GET['help_id'];
-
-		include_once "Services/UIComponent/Button/classes/class.ilLinkButton.php";
-		$button = ilLinkButton::getInstance();
-		$button->setCaption($this->plugin->txt('back'), false);
-		$button->setUrl(htmlentities($_GET['return']));
-		$this->toolbar->addButtonInstance($button);
-
-		$url = $this->plugin->getHelp()->getDetailsUrl($a_help_id);
-		if (!empty($url)) {
-			$button = ilLinkButton::getInstance();
-			$button->setCaption($this->plugin->txt('faq'), false);
-			$button->setUrl(htmlentities($url));
-			$this->toolbar->addButtonInstance($button);
-		}
-
-		$page_id = $this->plugin->getHelp()->getPageId($a_help_id);
-		if  (!empty($page_id))
-		{$tpl = $this->plugin->getTemplate('tpl.help_page.html');
-
-			require_once('Modules/Wiki/classes/class.ilWikiPageGUI.php');
-			$page_gui = new ilWikiPageGUI($page_id);
-			if (isset($page_gui))
-			{
-				$page_gui->setTemplateOutput(false);
-				$page_gui->setOutputMode(IL_PAGE_PRESENTATION);
-				$page_gui->setEnabledTabs(false);
-
-				$this->tpl->addCss('Services/COPage/css/content.css"');
-				$tpl->setVariable('CONTENT', $page_gui->getHTML());
-			}
-			else
-			{
-				$tpl->setVariable('CONTENT', 'not found');
-			}
-
-			$this->tpl->setContent($tpl->get());
-		}
-
-		$this->tabs->clearTargets();
-		$this->tabs->clearSubTabs();
-		$this->tpl->show();
-	}
-
     /**
-	 * Modify the meta data toolbar
-	 */
-	public function modifyMetaDataToolbar()
-	{
-		/** @var ilToolbarGUI $ilToolbar */
-		global $ilToolbar;
+     * Add the publishing info to the page
+     */
+	public function addPublishInfo()
+    {
+        global $DIC;
+        $factory = $DIC->ui()->factory();
+        $renderer = $DIC->ui()->renderer();
 
-		$this->toolbar->addSeparator();
-		$this->toolbar->addText($this->md_obj->getPublishInfo());
+        $tpl = $this->plugin->getTemplate('tpl.publish_status.html');
+        $tpl->setVariable('HEADER', $this->plugin->txt('publish_oer'));
+        $tpl->setVariable('BODY', $this->md_obj->getPublishInfo());
+        $tpl->setVariable('HELP', $this->plugin->getHelpGUI()->getHelpButton('publish_oai'));
 
-		$this->ctrl->setParameter($this, 'return', urlencode($_SERVER['SCRIPT_NAME'].'?'.$_SERVER['QUERY_STRING']));
+        $this->ctrl->setParameter($this, 'return', urlencode($_SERVER['SCRIPT_NAME'].'?'.$_SERVER['QUERY_STRING']));
 
-		include_once "Services/UIComponent/Button/classes/class.ilLinkButton.php";
-		switch ($this->md_obj->getPublishStatus())
-		{
-			case ilOerPublishMD::STATUS_READY:
-				$button = ilLinkButton::getInstance();
-				$button->setCaption($this->plugin->txt('publish'), false);
-				$button->setUrl($this->getLinkTarget('publish'));
-				$this->toolbar->addButtonInstance($button);
-				break;
+        switch ($this->md_obj->getPublishStatus())
+        {
+            case ilOerPublishMD::STATUS_READY:
+                $button = $factory->button()->standard($this->plugin->txt('publish'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilOerPublishGUI', 'ilOerPublishWizardGUI')));
+                $tpl->setVariable('PUBLISH', $renderer->render($button));
+                break;
 
-			case ilOerPublishMD::STATUS_PUBLIC:
-				$button = ilLinkButton::getInstance();
-				$button->setCaption($this->plugin->txt('republish'), false);
-				$button->setUrl($this->getLinkTarget('republish'));
-				$this->toolbar->addButtonInstance($button);
+            case ilOerPublishMD::STATUS_PUBLIC:
+                $button = $factory->button()->standard($this->plugin->txt('republish'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilOerPublishGUI', 'ilOerPublishWizardGUI')));
+                $tpl->setVariable('REPUBLISH', $renderer->render($button));
+                break;
 
-				$button = ilLinkButton::getInstance();
-				$button->setCaption($this->plugin->txt('unpublish'), false);
-				$button->setUrl($this->getLinkTarget('unpublish'));
-				$this->toolbar->addButtonInstance($button);
-				break;
+            case ilOerPublishMD::STATUS_BROKEN:
+                $button = $factory->button()->standard($this->plugin->txt('unpublish'), $this->getLinkTarget('unpublish'));
+                $tpl->setVariable('UNPUBLISH', $renderer->render($button));
+                break;
+        }
 
-			case ilOerPublishMD::STATUS_BROKEN:
-				$button = ilLinkButton::getInstance();
-				$button->setCaption($this->plugin->txt('unpublish'), false);
-				$button->setUrl($this->getLinkTarget('unpublish'));
-				$this->toolbar->addButtonInstance($button);
-				break;
-		}
-
-		$button = ilLinkButton::getInstance();
-		$button->setCaption($this->plugin->txt('wizard'), false);
-		$button->setUrl($this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilOerPublishGUI', 'ilOerPublishWizardGUI')));
-		$this->toolbar->addButtonInstance($button);
-
-		// try to directly show a help page
-		$page_id = $this->plugin->getHelp()->getPageId('publish_oai');
-		if (!empty($page_id))
-		{
-			$button = ilLinkButton::getInstance();
-			$button->setCaption($this->plugin->txt('help'), false);
-			$this->ctrl->setParameter($this, 'help_id', 'publish_oai');
-			$button->setUrl($this->getLinkTarget('showHelp'));
-			$this->toolbar->addButtonInstance($button);
-			return;
-		}
-
-		// or try to open the help url in a new window
-		$url = $this->plugin->getHelp()->getDetailsUrl('publish_oai');
-		if (!empty($url))
-		{
-			$button = ilLinkButton::getInstance();
-			$button->setCaption($this->plugin->txt('help'), false);
-			$button->setTarget('_blank');
-			$button->setUrl(htmlentities($url));
-			$this->toolbar->addButtonInstance($button);
-		}
-	}
+        $this->tpl->setRightContent($tpl->get());
+    }
 }
 ?>

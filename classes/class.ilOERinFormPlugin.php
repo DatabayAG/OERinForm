@@ -25,6 +25,18 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
 
 
     /**
+     * Get the data set for an object
+     * @param $obj_id
+     * @return ilOerInFormData
+     */
+	public function getData($obj_id)
+    {
+        $this->includeClass('class.ilOerInFormData.php');
+        return new ilOerInFormData($this, $obj_id);
+    }
+
+
+    /**
      * Get the plugin configuration
      * @return ilOerInFormConfig
      */
@@ -52,8 +64,18 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
         return $this->help;
     }
 
+    /**
+     * Get the plugin configuration
+     * @return ilOerInFormHelpGUI
+     */
+    public function getHelpGUI()
+    {
+        $this->includeClass('class.ilOerInFormHelpGUI.php');
+        return new ilOerInFormHelpGUI();
+    }
 
-	/**
+
+    /**
 	 * Get a user preference
 	 * @param string	$name
 	 * @param mixed		$default

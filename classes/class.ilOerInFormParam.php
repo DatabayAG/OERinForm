@@ -66,4 +66,81 @@ class ilOerInFormParam
 		
 		return $param;
     }
+
+    /**
+     * Set the value and cast it to the correct type
+     * @param null $value
+     */
+    public function setValue($value = null)
+    {
+        switch($this->type)
+        {
+            case self::TYPE_TEXT:
+                $this->value = (string) $value;
+                break;
+            case self::TYPE_BOOLEAN:
+                $this->value = (bool) $value;
+                break;
+            case self::TYPE_INT:
+                $this->value = (integer) $value;
+                break;
+            case self::TYPE_FLOAT:
+                $this->value = (float) $value;
+                break;
+            case self::TYPE_REF_ID:
+                $this->value = (integer) $value;
+                break;
+        }
+    }
+
+    /**
+     * Get a form item for setting the parameter
+     */
+    public function getFormItem()
+    {
+        $title = $this->title;
+        $description = $this->description;
+        $postvar = $this->name;
+
+        switch($this->type)
+        {
+            case self::TYPE_HEAD:
+                $item = new ilFormSectionHeaderGUI();
+                $item->setTitle($title);
+                break;
+            case self::TYPE_TEXT:
+                $item = new ilTextInputGUI($title, $postvar);
+                $item->setValue($this->value);
+                break;
+            case self::TYPE_INT:
+                $item = new ilNumberInputGUI($title, $postvar);
+                $item->allowDecimals(false);
+                $item->setSize(10);
+                $item->setValue($this->value);
+                break;
+            case self::TYPE_BOOLEAN:
+                $item = new ilCheckboxInputGUI($title, $postvar);
+                $item->setChecked($this->value);
+                break;
+            case self::TYPE_FLOAT:
+                $item = new ilNumberInputGUI($title, $postvar);
+                $item->allowDecimals(true);
+                $item->setSize(10);
+                $item->setValue($this->value);
+                break;
+            case self::TYPE_REF_ID:
+                $item = new ilRepositorySelector2InputGUI($title, $postvar);
+                $item->setValue($this->value);
+                break;
+        }
+
+        if (strpos($description, '-') !== 0)
+        {
+            $item->setInfo($description);
+        }
+
+
+        return $item;
+    }
+
 }

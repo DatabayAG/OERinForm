@@ -5,6 +5,7 @@
  * Help functions for OerInform
  *
  * @author Fred Neumann <fred.neumann@fau.de>
+ *
  */
 class ilOerInFormHelp
 {
@@ -72,7 +73,7 @@ class ilOerInFormHelp
      * Get the url of a wiki page that can be linked for details
      *
      * @param string $a_help_id
-     * @return int
+     * @return string
      */
     public function getDetailsUrl($a_help_id)
     {
@@ -86,6 +87,8 @@ class ilOerInFormHelp
         {
             return 'goto.php?target=wiki_' . $ref_id;
         }
+
+        return '';
     }
 
 

@@ -80,36 +80,12 @@ class ilOerInFormConfig
      */
     public function set($name, $value = null)
     {
-       $param = $this->params[$name];
+        $param = $this->params[$name];
 
-       if (isset($param))
-       {
-           if (!isset($value))
-           {
-               $param->value = $value;
-           }
-           else
-           {
-               switch($param->type)
-               {
-                   case ilOerInFormParam::TYPE_TEXT:
-                       $param->value = (string) $value;
-                       break;
-                   case ilOerInFormParam::TYPE_BOOLEAN:
-                       $param->value = (bool) $value;
-                       break;
-                   case ilOerInFormParam::TYPE_INT:
-                       $param->value = (integer) $value;
-                       break;
-                   case ilOerInFormParam::TYPE_FLOAT:
-                       $param->value = (float) $value;
-                       break;
-                   case ilOerInFormParam::TYPE_REF_ID:
-                       $param->value = (integer) $value;
-                       break;
-               }
-           }
-       }
+        if (isset($param))
+        {
+            $param->setValue($value);
+        }
     }
 
 
