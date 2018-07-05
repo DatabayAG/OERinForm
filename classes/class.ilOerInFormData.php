@@ -26,6 +26,17 @@ class ilOerInFormData
             'cr_marken' => ilOerInFormParam::TYPE_BOOLEAN,
             'cr_kontext' => ilOerInFormParam::TYPE_BOOLEAN
         ],
+        'select_license' => [
+            'sl_existing' => ilOerInFormParam::TYPE_HEAD,
+            'sl_cc0' => ilOerInFormParam::TYPE_BOOLEAN,
+            'sl_cc_by' => ilOerInFormParam::TYPE_BOOLEAN,
+            'sl_cc_by_sa' => ilOerInFormParam::TYPE_BOOLEAN,
+            'sl_cc_by_nd' => ilOerInFormParam::TYPE_BOOLEAN,
+            'sl_cc_by_nc' => ilOerInFormParam::TYPE_BOOLEAN,
+            'sl_cc_by_nc_sa' => ilOerInFormParam::TYPE_BOOLEAN,
+            'sl_cc_by_nc_nd'=> ilOerInFormParam::TYPE_BOOLEAN,
+            'sl_own_choice' => ilOerInFormParam::TYPE_HEAD
+        ],
         'check_attrib' => [
             'ca_selbst' => ilOerInFormParam::TYPE_HEAD,
             'ca_lizenz_selbst' => ilOerInFormParam::TYPE_BOOLEAN,

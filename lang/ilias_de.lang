@@ -33,7 +33,7 @@ wizard_step#:#Schritt %s:
 check_rights#:#Prüfung auf Rechte Dritter
 check_rights_desc#:#Ihr Inhalt kann nur als OER veröffentlicht werden, wenn er frei von Rechten Dritter ist, oder die verwendenten Inhalte Dritter ebenfalls unter einer OER-Lizenz veröfentlicht sind.
 select_license#:#Festlegung einer Lizenz
-select_license_desc#:#Wählen Sie eine Lizenz, die zu den Lizensen der von Ihnen verwendeten Teile passt
+select_license_desc#:#Sie sollten Ihr Material unter einer "Creative Commons"-Lizenz veröffentlichen. Wählen sie zunächst alle Lizenzen von Teilen Ihres Materials aus und klicken Sie dann auf "Speichern und Prüfen". Anschließend sehen Sie, welche Lizenz Sie für das gesamte Material wählen können.
 check_attrib#:#Korrekte Lizenzangaben
 check_attrib_desc#:#Überprüfen Sie die richtige Auszeichnung des Materials
 describe_meta#:#Einordnen und Beschreiben
@@ -92,4 +92,27 @@ ca_nichtoffen_info#:#Sofern ich Material, das nicht unter einer offenen Lizenz s
 ca_zitat_info#:#Sofern ich mich in der Zitatschranke des § 51 UrhG bewege, dient das Zitat dem Zweck des neuen Kontextes bzw. es findet eine inhaltliche Auseinandersetzung statt.
 ca_nichtkomm_info#:#Sofern ich Material mit einer NC-Lizenz verwendet habe, ist meine Nutzung auch wirklich „nicht- kommerziell“ (Achtung: Dies könnte von den Gerichten auch für die Verwendung im universitären Rahmen bejaht werden).
 ca_quellen_check_info#:#Ich habe die Quellen des verwendeten Materials geprüft und bin der Auffassung, dass es sich um eine sichere Quelle handelt. Ich vertraue der Quelle derart, dass sie nicht bereits urheberrechtliche oder persönlichkeitsrechtliche Verstöße enthält. Ich bin mir ziemlich sicher, dass der Urheber dieses Material auch als OER herausgegeben hat.
-ca_quellen_doku_info#:#•	Dementsprechend habe ich die Quelle dokumentiert.
+ca_quellen_doku_info#:#Dementsprechend habe ich die Quelle dokumentiert.
+sl_existing#:#Lizenzen enthaltener Werke
+sl_cc0#:#CC0
+sl_cc_by#:#CC BY
+sl_cc_by_sa#:#CC BY-SA
+sl_cc_by_nd#:#CC BY-ND
+sl_cc_by_nc#:#CC BY-NC
+sl_cc_by_nc_sa#:#CC BY-NC-SA
+sl_cc_by_nc_nd#:#CC BY-NC-ND
+sl_other#:#Andere
+sl_own_choice#:#Gesamt-Lizenz
+sl_cc0_info#:#Das Werk unterliegt keinerlei Urheberrechtsschutz und kann ohne Einschränkungen genutzt und verändert werden.
+sl_cc_by_info#:#Das Werk kann frei genutzt und verändert werden, sofern die Urheberin oder der Urheber genannt wird.
+sl_cc_by_sa_info#:#Das Werk kann frei genutzt und verändert werden, sofern die Urheberin oder der Urheber genannt wird und das neue Werk unter derselben CC-Lizenz wie das Ursprungswerk veröffentlicht wird.
+sl_cc_by_nd_info#:#Das Werk kann frei genutzt werden, sofern die Urheberin oder der Urheber genannt wird. Es darf jedoch nicht verändert werden.
+sl_cc_by_nc_info#:#Das Werk kann frei genutzt und verändert werden, sofern die Urheberin oder der Urheber genannt wird und das Werk nicht kommerziell genutzt wird.
+sl_cc_by_nc_sa_info#:#Das Werk kann frei genutzt werden, sofern die Urheberin oder der Urheber genannt und das Werk nicht kommerziell genutzt werden, sowie das neue Werk unter derselben CC-Lizenz wie das Ursprungswerk veröffentlicht wird.
+sl_cc_by_nc_nd_info#:#Das Werk kann frei genutzt werden, sofern die Urheberin oder der Urheber genannt und das Werk nicht kommerziell genutzt werden. Es darf jedoch nicht verändert werden.
+sl_other_info#:#Das Material einthält auch Werke unter anderen Lizenzen. Für diese müssen Sie selbst prüfen, ob sie mit einer CC-Lizenz vereinbar sind.
+sl_own_choice_info#:#Wählen Sie hier, die Lizenz, unter der Sie das Material veröffentlichen wollen. Die Lizenzen "CC0", "CC BY" und "CC BY-SA" gelten allgemein als OER-konform und werden von CreativeCommons.org als Free Cultural Works anerkannt.
+selected_license#:#Ausgewählte Lizenz
+no_cc_license#:#Keine oder andere Lizenz
+no_cc_license_info#:#Mit dieser Auswahl können Sie das Material nicht als OER veröffentlichen.
+save_and_check#:#Speichern und Prüfen

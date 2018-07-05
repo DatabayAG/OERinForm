@@ -307,10 +307,122 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 
     protected function selectLicense()
     {
-        $link = $this->plugin->getImagePath('step2.png');
-        $this->output('<img src="'.$link.'" />');
+        $form = $this->initLicenseSelectForm();
+        $this->output($form->getHTML());
     }
 
+    protected function initLicenseSelectForm()
+    {
+        $form = new ilPropertyFormGUI();
+        $form->setOpenTag(false);
+        $form->setCloseTag(false);
+        $form->setFormAction($this->ctrl->getFormAction($this));
+
+        foreach ($this->data->getParamsBySection('select_license') as $name => $param)
+        {
+            $item = $param->getFormItem();
+            $form->addItem($item);
+        }
+
+        $license = $this->md_obj->getCCLicense();
+        $radio = new ilRadioGroupInputGUI($this->plugin->txt('selected_license'), 'selected_license');
+        $option = new ilRadioOption($this->plugin->txt('no_cc_license'), 'no_cc_license', $this->plugin->txt('no_cc_license_info'));
+        $radio->addOption($option);
+        $radio->setValue('no_cc_license');
+        foreach ($this->md_obj->getAvailableCCLicenses() as $cc => $value)
+        {
+            switch ($cc)
+            {
+                case ilOerPublishMD::CC0:
+                    $title = $this->plugin->txt('sl_cc0');
+                    $info = $this->plugin->txt('sl_cc0_info');
+                    break;
+                case ilOerPublishMD::CC_BY:
+                    $title = $this->plugin->txt('sl_cc_by');
+                    $info = $this->plugin->txt('sl_cc_by_info');
+                    break;
+                case ilOerPublishMD::CC_BY_SA:
+                    $title = $this->plugin->txt('sl_cc_by_sa');
+                    $info = $this->plugin->txt('sl_cc_by_sa_info');
+                    break;
+                case ilOerPublishMD::CC_BY_ND:
+                    $title = $this->plugin->txt('sl_cc_by_nd');
+                    $info = $this->plugin->txt('sl_cc_by_nd_info');
+                    break;
+                case ilOerPublishMD::CC_BY_NC:
+                    $title = $this->plugin->txt('sl_cc_by_nc');
+                    $info = $this->plugin->txt('sl_cc_by_nc_info');
+                    break;
+                case ilOerPublishMD::CC_BY_NC_SA:
+                    $title = $this->plugin->txt('sl_cc_by_nc_sa');
+                    $info = $this->plugin->txt('sl_cc_by_nc_sa_info');
+                    break;
+                case ilOerPublishMD::CC_BY_NC_ND:
+                    $title = $this->plugin->txt('sl_cc_by_nc_nd');
+                    $info = $this->plugin->txt('sl_cc_by_nc_nd_info');
+                    break;
+            }
+
+            $option = new ilRadioOption($title, $cc, $info);
+            $radio->addOption($option);
+
+            if ($license == $cc)
+            {
+                $radio->setValue($license);
+            }
+        }
+        $form->addItem($radio);
+
+        $form->addCommandButton('saveLicense', $this->plugin->txt('save_and_check'));
+        return $form;
+    }
+
+
+    protected function saveLicense()
+    {
+        $form = $this->initRightsCheckForm();
+        if ($form->checkInput())
+        {
+            foreach (array_keys($this->data->getParamsBySection('select_license')) as $name)
+            {
+                $this->data->set($name, $form->getInput($name));
+            }
+            $this->data->write();
+
+            if(!is_object($this->md_section = $this->md_obj->getRights()))
+            {
+                $this->md_section = $this->md_obj->addRights();
+                $this->md_section->save();
+            }
+
+            $license = $form->getInput('selected_license');
+            $available = $this->md_obj->getAvailableCCLicenses();
+            // set available new cc license
+            if (isset($available[$license]))
+            {
+                $this->md_section->setCopyrightAndOtherRestrictions("Yes");
+                $this->md_section->setDescription($available[$license]);
+                $this->md_section->update();
+            }
+            // remove old cc license
+            elseif (!empty($this->md_obj->getCCLicense()))
+            {
+                $this->md_section->setDescription('');
+                $this->md_section->update();
+
+            }
+
+            $this->ctrl->redirect($this, 'selectLicense');
+        }
+        else
+        {
+            $this->cmd = 'selectLicense';
+            $this->step = $this->getStepByCommand($this->cmd);
+            $form->setValuesByPost();
+            $this->output($form->getHTML());
+        }
+
+    }
 
     protected function checkAttrib()
     {

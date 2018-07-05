@@ -12,6 +12,14 @@ include_once("./Services/MetaData/classes/class.ilMD.php");
  */
 class ilOerPublishMD extends ilMD
 {
+    const CC0 = 'cc0';
+    const CC_BY = 'cc_by';
+    const CC_BY_SA = 'cc_by_sa';
+    const CC_BY_ND = 'cc_by_nd';
+    const CC_BY_NC = 'cc_by_nc';
+    const CC_BY_NC_SA = 'cc_by_nc_sa';
+    const CC_BY_NC_ND = 'cc_by_nc_nd';
+
 	const STATUS_PRIVATE = 'private';
 	const STATUS_READY = 'ready';
 	const STATUS_PUBLIC = 'published';
@@ -223,6 +231,87 @@ class ilOerPublishMD extends ilMD
 
 		return $xml;
 	}
+
+    /**
+     * Get the CC license identifiers for the configured CC licenses
+     * @return array
+     */
+	public function getAvailableCCLicenses()
+    {
+        $map = [
+            self::CC0 => '',
+            self::CC_BY => '',
+            self::CC_BY_SA => '',
+            self::CC_BY_ND => '',
+            self::CC_BY_NC => '',
+            self::CC_BY_NC_ND => '',
+            self::CC_BY_NC_SA => ''
+        ];
+
+        /** @var ilMDCopyrightSelectionEntry $entry */
+        foreach (ilMDCopyrightSelectionEntry::_getEntries() as $entry)
+        {
+            $description = $entry->getCopyright();
+            $id = 'il_copyright_entry__'.IL_INST_ID.'__'.(int) $entry->getEntryId();
+
+            if (strpos($description, 'creativecommons.org/licenses/zero/'))
+            {
+                $map[self::CC0] = $id;
+            }
+            elseif (strpos($description, 'creativecommons.org/licenses/by/'))
+            {
+                $map[self::CC_BY] = $id;
+            }
+            elseif (strpos($description, 'creativecommons.org/licenses/by-sa/'))
+            {
+                $map[self::CC_BY_SA] = $id;
+            }
+            elseif (strpos($description, 'creativecommons.org/licenses/by-nd/'))
+            {
+                $map[self::CC_BY_ND] = $id;
+            }
+            elseif (strpos($description, 'creativecommons.org/licenses/by-nc/'))
+            {
+                $map[self::CC_BY_NC] = $id;
+            }
+            elseif (strpos($description, 'creativecommons.org/licenses/by-nc-nd/'))
+            {
+                $map[self::CC_BY_NC_ND] = $id;
+            }
+            elseif (strpos($description, 'creativecommons.org/licenses/by-nc-sa/'))
+            {
+                $map[self::CC_BY_NC_SA] = $id;
+            }
+        }
+
+        $available = [];
+        foreach ($map as $cc => $value)
+        {
+            if (!empty($value))
+            {
+                $available[$cc] = $value;
+            }
+        }
+
+        return $available;
+    }
+
+    /**
+     * Get the CC license of the current object
+     * @return string
+     */
+    public function getCCLicense()
+    {
+	    $license = ilMDRights::_lookupDescription($this->getRBACId(), $this->getObjId());
+	    foreach ($this->getAvailableCCLicenses() as $cc => $value)
+        {
+            if ($license == $value)
+            {
+                return $cc;
+            }
+        }
+        return '';
+    }
 }
 
 ?>
