@@ -56,30 +56,30 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 				'cmd' => 'selectLicense',
 				'title_var' => 'select_license',
 				'desc_var' => 'select_license_desc',
-				'prev_cmd' => 'checkLicenses',
-				'next_cmd' => 'checkAttrib',
+				'prev_cmd' => 'checkRights',
+				'next_cmd' => 'describeMeta',
             	'help_id' => 'select_license',
 		),
         array (
-				'cmd' => 'checkAttrib',
-				'title_var' => 'check_attrib',
-				'desc_var' => 'check_attrib_desc',
-				'prev_cmd' => 'selectLicense',
-				'next_cmd' => 'saveAttribAndDescribeMeta',
-				'help_id' => 'select_license',
-			),
-		array (
 				'cmd' => 'describeMeta',
 				'title_var' => 'describe_meta',
 				'desc_var' => 'describe_meta_desc',
 				'prev_cmd' => 'selectLicense',
-				'next_cmd' => 'declarePublish',
+				'next_cmd' => 'saveMetaAndCheckAttrib',
+        ),
+		array (
+				'cmd' => 'checkAttrib',
+				'title_var' => 'check_attrib',
+				'desc_var' => 'check_attrib_desc',
+				'prev_cmd' => 'describeMeta',
+				'next_cmd' => 'saveAttribAndDeclarePublish',
+				'help_id' => 'select_license',
 		),
 		array (
 				'cmd' => 'declarePublish',
 				'title_var' => 'declare_publish',
 				'desc_var' => 'declare_publish_desc',
-				'prev_cmd' => 'describeMeta',
+				'prev_cmd' => 'checkAttrib',
 				'next_cmd' => 'returnToParent'
 		)
  	);
@@ -354,11 +354,442 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 
 	protected function describeMeta()
 	{
-		$link = $this->plugin->getImagePath('step3.png');
-		$this->output('<img src="'.$link.'" />');
+        $form = $this->initMetaEditForm();
+        $this->output($form->getHTML());
 	}
 
-	protected function declarePublish()
+
+    /**
+     * Init quick edit form.
+     */
+    public function initMetaEditForm()
+    {
+        global $lng, $ilCtrl, $tree;
+
+		$this->lng->loadLanguageModule('meta');
+        $this->md_settings = ilMDSettings::_getInstance();
+        if(!is_object($this->md_section = $this->md_obj->getGeneral()))
+        {
+            $this->md_section = $this->md_obj->addGeneral();
+            $this->md_section->save();
+        }
+        $this->form = new ilPropertyFormGUI();
+
+        // title
+        $ti = new ilTextInputGUI($this->lng->txt("title"), "gen_title");
+        $ti->setMaxLength(200);
+        $ti->setSize(50);
+        if($this->md_obj->getObjType() != 'sess')
+        {
+            $ti->setRequired(true);
+        }
+        $ti->setValue($this->md_section->getTitle());
+        $this->form->addItem($ti);
+
+        // description(s)
+        foreach($ids = $this->md_section->getDescriptionIds() as $id)
+        {
+            $md_des = $this->md_section->getDescription($id);
+
+            $ta = new ilTextAreaInputGUI($this->lng->txt("meta_description"), "gen_description[".$id."][description]");
+            $ta->setCols(50);
+            $ta->setRows(4);
+            $ta->setValue($md_des->getDescription());
+            if (count($ids) > 1)
+            {
+                $ta->setInfo($this->lng->txt("meta_l_".$md_des->getDescriptionLanguageCode()));
+            }
+
+            $this->form->addItem($ta);
+        }
+
+        // language(s)
+        $first = "";
+        $options = ilMDLanguageItem::_getLanguages();
+        foreach($ids = $this->md_section->getLanguageIds() as $id)
+        {
+            $md_lan = $this->md_section->getLanguage($id);
+            $first_lang = $md_lan->getLanguageCode();
+            $si = new ilSelectInputGUI($this->lng->txt("meta_language"), "gen_language[".$id."][language]");
+            $si->setOptions($options);
+            $si->setValue($md_lan->getLanguageCode());
+            $this->form->addItem($si);
+            $first = false;
+        }
+        if ($first)
+        {
+            $si = new ilSelectInputGUI($this->lng->txt("meta_language"), "gen_language[][language]");
+            $si->setOptions($options);
+            $this->form->addItem($si);
+        }
+
+        // keyword(s)
+        $first = true;
+        $keywords = array();
+        foreach($ids = $this->md_section->getKeywordIds() as $id)
+        {
+            $md_key = $this->md_section->getKeyword($id);
+            if (trim($md_key->getKeyword()) != "")
+            {
+                $keywords[$md_key->getKeywordLanguageCode()][]
+                    = $md_key->getKeyword();
+            }
+        }
+        foreach($keywords as $lang => $keyword_set)
+        {
+            $kw = new ilTextInputGUI($this->lng->txt("keywords"),
+                "keywords[value][".$lang."]");
+            $kw->setDataSource($this->ctrl->getLinkTarget($this, "keywordAutocomplete", "", true));
+            $kw->setMaxLength(200);
+            $kw->setSize(50);
+            $kw->setMulti(true);
+            if (count($keywords) > 1)
+            {
+                $kw->setInfo($this->lng->txt("meta_l_".$lang));
+            }
+            $this->form->addItem($kw);
+            asort($keyword_set);
+            $kw->setValue($keyword_set);
+        }
+        if (count($keywords) == 0)
+        {
+            $kw = new ilTextInputGUI($this->lng->txt("keywords"),
+                "keywords[value][".$first_lang."]");
+            $kw->setDataSource($this->ctrl->getLinkTarget($this, "keywordAutocomplete", "", true));
+            $kw->setMaxLength(200);
+            $kw->setSize(50);
+            $kw->setMulti(true);
+            $this->form->addItem($kw);
+        }
+
+        // Lifecycle...
+        // Authors
+        $ta = new ilTextAreaInputGUI($this->lng->txt('authors')."<br />".
+            "(".sprintf($this->lng->txt('md_separated_by'), $this->md_settings->getDelimiter()).")",
+            "life_authors");
+        $ta->setCols(50);
+        $ta->setRows(2);
+        if(is_object($this->md_section = $this->md_obj->getLifecycle()))
+        {
+            $sep = $ent_str = "";
+            foreach(($ids = $this->md_section->getContributeIds()) as $con_id)
+            {
+                $md_con = $this->md_section->getContribute($con_id);
+                if ($md_con->getRole() == "Author")
+                {
+                    foreach($ent_ids = $md_con->getEntityIds() as $ent_id)
+                    {
+                        $md_ent = $md_con->getEntity($ent_id);
+                        $ent_str = $ent_str.$sep.$md_ent->getEntity();
+                        $sep = $this->md_settings->getDelimiter()." ";
+                    }
+                }
+            }
+            $ta->setValue($ent_str);
+        }
+        $this->form->addItem($ta);
+
+        // copyright
+//        include_once("./Services/MetaData/classes/class.ilCopyrightInputGUI.php");
+//        $cp = new ilCopyrightInputGUI($this->lng->txt("meta_copyright"), "copyright");
+//        $cp->setCols(50);
+//        $cp->setRows(3);
+//        $desc = ilMDRights::_lookupDescription($this->md_obj->getRBACId(),
+//            $this->md_obj->getObjId());
+//        $val["ta"] = $desc;
+//        $cp->setValue($val);
+//        $this->form->addItem($cp);
+
+        // typical learning time
+        include_once("./Services/MetaData/classes/class.ilTypicalLearningTimeInputGUI.php");
+        $tlt = new ilTypicalLearningTimeInputGUI($this->lng->txt("meta_typical_learning_time"), "tlt");
+        $edu = $this->md_obj->getEducational();
+        if (is_object($edu))
+        {
+            $tlt->setValueByLOMDuration($edu->getTypicalLearningTime());
+        }
+        $this->form->addItem($tlt);
+
+
+        $this->form->setTitle($this->lng->txt("description"));
+        $this->form->setFormAction($ilCtrl->getFormAction($this));
+        $this->form->addCommandButton('saveMeta', $this->lng->txt('save'));
+
+        return $this->form;
+    }
+
+    /**
+     * Keyword list for autocomplete
+     *
+     * @param
+     * @return
+     */
+    function keywordAutocomplete()
+    {
+
+        include_once("./Services/MetaData/classes/class.ilMDKeyword.php");
+        $res = ilMDKeyword::_getMatchingKeywords(ilUtil::stripSlashes($_GET["term"]),
+            $this->md_obj->getObjType(), $this->md_obj->getRBACId());
+
+        $result = array();
+        $cnt = 0;
+        foreach ($res as $r)
+        {
+            if ($cnt++ > 19)
+            {
+                continue;
+            }
+            $entry = new stdClass();
+            $entry->value = $r;
+            $entry->label = $r;
+            $result[] = $entry;
+        }
+
+        include_once './Services/JSON/classes/class.ilJsonUtil.php';
+        echo ilJsonUtil::encode($result);
+        exit;
+    }
+
+
+    function saveMetaAndCheckAttrib()
+	{
+		if ($this->updateMeta())
+		{
+            $this->ctrl->redirect($this, 'checkAttrib');
+		}
+	}
+
+	function saveMeta()
+	{
+		if ($this->updateMeta())
+		{
+            ilUtil::sendSuccess($this->lng->txt("saved_successfully"), true);
+            $this->ctrl->redirect($this, 'describeMeta');
+		}
+	}
+
+    /**
+     * update quick edit properties
+     */
+    function updateMeta()
+    {
+        $this->md_settings = ilMDSettings::_getInstance();
+
+        if(!trim($_POST['gen_title']))
+        {
+            if($this->md_obj->getObjType() != 'sess')
+            {
+                ilUtil::sendFailure($this->lng->txt('title_required'));
+                $this->cmd = 'describeMeta';
+                $this->step = $this->getStepByCommand($this->cmd);
+                $form = $this->initAttribCheckForm();
+                $form->checkInput();
+                $form->setValuesByPost();
+                $this->output($form->getHTML());
+                return false;
+            }
+        }
+
+        // General values
+        $this->md_section = $this->md_obj->getGeneral();
+        $this->md_section->setTitle(ilUtil::stripSlashes($_POST['gen_title']));
+//		$this->md_section->setTitleLanguage(new ilMDLanguageItem($_POST['gen_title_language']));
+        $this->md_section->update();
+
+        // Language
+        if(is_array($_POST['gen_language']))
+        {
+            foreach($_POST['gen_language'] as $id => $data)
+            {
+                if ($id > 0)
+                {
+                    $md_lan = $this->md_section->getLanguage($id);
+                    $md_lan->setLanguage(new ilMDLanguageItem($data['language']));
+                    $md_lan->update();
+                }
+                else
+                {
+                    $md_lan = $this->md_section->addLanguage();
+                    $md_lan->setLanguage(new ilMDLanguageItem($data['language']));
+                    $md_lan->save();
+                }
+            }
+        }
+        // Description
+        if(is_array($_POST['gen_description']))
+        {
+            foreach($_POST['gen_description'] as $id => $data)
+            {
+                $md_des = $this->md_section->getDescription($id);
+                $md_des->setDescription(ilUtil::stripSlashes($data['description']));
+//				$md_des->setDescriptionLanguage(new ilMDLanguageItem($data['language']));
+                $md_des->update();
+            }
+        }
+
+        // Keyword
+        if(is_array($_POST["keywords"]["value"]))
+        {
+            include_once("./Services/MetaData/classes/class.ilMDKeyword.php");
+            ilMDKeyword::updateKeywords($this->md_section, $_POST["keywords"]["value"]);
+        }
+        $this->callListeners('General');
+
+        // Copyright
+        //if($_POST['copyright_id'] or $_POST['rights_copyright'])
+        if($_POST['copyright']['sel'] || $_POST['copyright']['ta'])
+        {
+            if(!is_object($this->md_section = $this->md_obj->getRights()))
+            {
+                $this->md_section = $this->md_obj->addRights();
+                $this->md_section->save();
+            }
+            if($_POST['copyright']['sel'])
+            {
+                $this->md_section->setCopyrightAndOtherRestrictions("Yes");
+                $this->md_section->setDescription('il_copyright_entry__'.IL_INST_ID.'__'.(int) $_POST['copyright']['sel']);
+            }
+            else
+            {
+                $this->md_section->setCopyrightAndOtherRestrictions("Yes");
+                $this->md_section->setDescription(ilUtil::stripSlashes($_POST['copyright']['ta']));
+            }
+            $this->md_section->update();
+        }
+        else
+        {
+            if(is_object($this->md_section = $this->md_obj->getRights()))
+            {
+                $this->md_section->setCopyrightAndOtherRestrictions("No");
+                $this->md_section->setDescription("");
+                $this->md_section->update();
+            }
+        }
+        $this->callListeners('Rights');
+
+        //Educational...
+        // Typical Learning Time
+        if($_POST['tlt']['mo'] or $_POST['tlt']['d'] or
+            $_POST["tlt"]['h'] or $_POST['tlt']['m'] or $_POST['tlt']['s'])
+        {
+            if(!is_object($this->md_section = $this->md_obj->getEducational()))
+            {
+                $this->md_section = $this->md_obj->addEducational();
+                $this->md_section->save();
+            }
+            $this->md_section->setPhysicalTypicalLearningTime((int)$_POST['tlt']['mo'],(int)$_POST['tlt']['d'],
+                (int)$_POST['tlt']['h'],(int)$_POST['tlt']['m'],(int)$_POST['tlt']['s']);
+            $this->md_section->update();
+        }
+        else
+        {
+            if(is_object($this->md_section = $this->md_obj->getEducational()))
+            {
+                $this->md_section->setPhysicalTypicalLearningTime(0,0,0,0,0);
+                $this->md_section->update();
+            }
+        }
+        $this->callListeners('Educational');
+        //Lifecycle...
+        // Authors
+        if ($_POST["life_authors"] != "")
+        {
+            if(!is_object($this->md_section = $this->md_obj->getLifecycle()))
+            {
+                $this->md_section = $this->md_obj->addLifecycle();
+                $this->md_section->save();
+            }
+
+            // determine all entered authors
+            $auth_arr = explode($this->md_settings->getDelimiter(), $_POST["life_authors"]);
+            for($i = 0; $i < count($auth_arr); $i++)
+            {
+                $auth_arr[$i] = trim($auth_arr[$i]);
+            }
+
+            $md_con_author = "";
+
+            // update existing author entries (delete if not entered)
+            foreach(($ids = $this->md_section->getContributeIds()) as $con_id)
+            {
+                $md_con = $this->md_section->getContribute($con_id);
+                if ($md_con->getRole() == "Author")
+                {
+                    foreach($ent_ids = $md_con->getEntityIds() as $ent_id)
+                    {
+                        $md_ent = $md_con->getEntity($ent_id);
+
+                        // entered author already exists
+                        if (in_array($md_ent->getEntity(), $auth_arr))
+                        {
+                            unset($auth_arr[array_search($md_ent->getEntity(), $auth_arr)]);
+                        }
+                        else  // existing author has not been entered again -> delete
+                        {
+                            $md_ent->delete();
+                        }
+                    }
+                    $md_con_author = $md_con;
+                }
+            }
+
+            // insert enterd, but not existing authors
+            if (count($auth_arr) > 0)
+            {
+                if (!is_object($md_con_author))
+                {
+                    $md_con_author = $this->md_section->addContribute();
+                    $md_con_author->setRole("Author");
+                    $md_con_author->save();
+                }
+                foreach ($auth_arr as $auth)
+                {
+                    $md_ent = $md_con_author->addEntity();
+                    $md_ent->setEntity(ilUtil::stripSlashes($auth));
+                    $md_ent->save();
+                }
+            }
+        }
+        else	// nothing has been entered: delete all author contribs
+        {
+            if(is_object($this->md_section = $this->md_obj->getLifecycle()))
+            {
+                foreach(($ids = $this->md_section->getContributeIds()) as $con_id)
+                {
+                    $md_con = $this->md_section->getContribute($con_id);
+                    if ($md_con->getRole() == "Author")
+                    {
+                        $md_con->delete();
+                    }
+                }
+            }
+        }
+        $this->callListeners('Lifecycle');
+
+        return true;
+    }
+
+    // Observer methods
+    function addObserver(&$a_class,$a_method,$a_element)
+    {
+        $this->observers[$a_element]['class'] =& $a_class;
+        $this->observers[$a_element]['method'] =& $a_method;
+
+        return true;
+    }
+    function callListeners($a_element)
+    {
+        if(isset($this->observers[$a_element]))
+        {
+            $class =& $this->observers[$a_element]['class'];
+            $method = $this->observers[$a_element]['method'];
+
+            return $class->$method($a_element);
+        }
+        return false;
+    }
+
+    protected function declarePublish()
 	{
 		$link = $this->plugin->getImagePath('step4.png');
 		$this->output('<img src="'.$link.'" />');
