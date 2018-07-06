@@ -57,7 +57,7 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 				'title_var' => 'select_license',
 				'desc_var' => 'select_license_desc',
 				'prev_cmd' => 'checkRights',
-				'next_cmd' => 'describeMeta',
+				'next_cmd' => 'saveLicenseAndDescribeMeta',
             	'help_id' => 'select_license',
 		),
         array (
@@ -66,6 +66,7 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 				'desc_var' => 'describe_meta_desc',
 				'prev_cmd' => 'selectLicense',
 				'next_cmd' => 'saveMetaAndCheckAttrib',
+                'help_id' => 'declare_meta',
         ),
 		array (
 				'cmd' => 'checkAttrib',
@@ -73,14 +74,14 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 				'desc_var' => 'check_attrib_desc',
 				'prev_cmd' => 'describeMeta',
 				'next_cmd' => 'saveAttribAndDeclarePublish',
-				'help_id' => 'select_license',
+				'help_id' => 'check_attrib',
 		),
 		array (
 				'cmd' => 'declarePublish',
 				'title_var' => 'declare_publish',
 				'desc_var' => 'declare_publish_desc',
 				'prev_cmd' => 'checkAttrib',
-				'next_cmd' => 'returnToParent'
+				'next_cmd' => 'final_publish'
 		)
  	);
 
@@ -167,6 +168,8 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 	    $ilTabs = $DIC->tabs();
 	    $lng = $DIC->language();
 
+	    $checks = $this->checkAll();
+
 		// show step list and determine the current step number
 		$tpl = $this->plugin->getTemplate("tpl.wizard_steps.html");
 		for ($i = 0; $i < count($this->steps); $i++)
@@ -174,6 +177,7 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 			if ($this->steps[$i]['cmd'] == $this->cmd)
 			{
 				$tpl->setCurrentBlock('strong');
+				$stepindex = $i;
 				$stepnum = $i + 1;
 			}
 			else
@@ -181,8 +185,19 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 				$tpl->setCurrentBlock('normal');
 				$tpl->setVariable('LINK', $this->ctrl->getLinkTarget($this,$this->steps[$i]['cmd']));
 			}
-			$tpl->setVariable("TITLE", $this->plugin->txt($this->steps[$i]['title_var']));
-			$tpl->setVariable("STEP", sprintf($this->plugin->txt("wizard_step"),$i + 1));
+			$title = $this->plugin->txt($this->steps[$i]['title_var']);
+			$step = sprintf($this->plugin->txt("wizard_step"),$i + 1);
+			if ($checks[$i]['status'])
+            {
+                $step = $this->getOkImage(16) . " " .$step;
+            }
+            else
+            {
+                $step = $this->getNotOkImage(16) . " " . $step;
+            }
+
+			$tpl->setVariable("TITLE", $title);
+			$tpl->setVariable("STEP", $step);
 			$tpl->parseCurrentBlock();
 			$tpl->setCurrentBlock("stepline");
 			$tpl->parseCurrentBlock();
@@ -209,8 +224,15 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 		{
 			$tpl->setVariable("STEP", sprintf($this->plugin->txt("wizard_step"),$stepnum));
 
-			ilUtil::sendInfo($this->plugin->txt($this->step['desc_var']));
-			//$tpl->setVariable("DESCRIPTION", $this->plugin->txt($this->step['desc_var']));
+			$info = $this->plugin->txt($this->step['desc_var']);
+			if (is_array($checks[$stepindex]['messages']))
+            {
+                foreach ($checks[$stepindex]['messages'] as $message)
+                {
+                    $info .= '<br />'. $this->getNotOkImage(16). " " . $message;
+                }
+            }
+			ilUtil::sendInfo($info);
 
 			require_once("./Services/UIComponent/Toolbar/classes/class.ilToolbarGUI.php");
 			$tb = new ilToolbarGUI();
@@ -329,6 +351,9 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
         $option = new ilRadioOption($this->plugin->txt('no_cc_license'), 'no_cc_license', $this->plugin->txt('no_cc_license_info'));
         $radio->addOption($option);
         $radio->setValue('no_cc_license');
+
+        $allowed_licenses = $this->md_obj->ccMixer($this->data->getIncludedLicenses());
+
         foreach ($this->md_obj->getAvailableCCLicenses() as $cc => $value)
         {
             switch ($cc)
@@ -362,8 +387,19 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
                     $info = $this->plugin->txt('sl_cc_by_nc_nd_info');
                     break;
             }
-
+            if (!in_array($cc, $allowed_licenses))
+            {
+                $title .= ' '. $this->getNotOkImage(12);
+                $disabled = true;
+            }
+            else
+            {
+                $title .= ' '. $this->getOkImage(12);
+                $disabled = true;
+            }
             $option = new ilRadioOption($title, $cc, $info);
+            $option->setDisabled($disabled);
+
             $radio->addOption($option);
 
             if ($license == $cc)
@@ -377,8 +413,25 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
         return $form;
     }
 
+    function saveLicenseAndDescribeMeta()
+    {
+        if ($this->updateLicense())
+        {
+            $this->ctrl->redirect($this, 'describeMeta');
+        }
+    }
 
-    protected function saveLicense()
+    function saveLicense()
+    {
+        if ($this->updateLicense())
+        {
+            ilUtil::sendSuccess($this->lng->txt("saved_successfully"), true);
+            $this->ctrl->redirect($this, 'selectLicense');
+        }
+    }
+
+
+    protected function updateLicense()
     {
         $form = $this->initRightsCheckForm();
         if ($form->checkInput())
@@ -412,7 +465,7 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 
             }
 
-            $this->ctrl->redirect($this, 'selectLicense');
+            return true;
         }
         else
         {
@@ -424,11 +477,13 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 
     }
 
+
     protected function checkAttrib()
     {
         $form = $this->initAttribCheckForm();
         $this->output($form->getHTML());
     }
+
     protected function initAttribCheckForm()
     {
         $form = new ilPropertyFormGUI();
@@ -442,6 +497,7 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
         }
         return $form;
     }
+
     protected function saveAttribAndDescribeMeta()
     {
         $form = $this->initAttribCheckForm();
@@ -581,36 +637,9 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
             "life_authors");
         $ta->setCols(50);
         $ta->setRows(2);
-        if(is_object($this->md_section = $this->md_obj->getLifecycle()))
-        {
-            $sep = $ent_str = "";
-            foreach(($ids = $this->md_section->getContributeIds()) as $con_id)
-            {
-                $md_con = $this->md_section->getContribute($con_id);
-                if ($md_con->getRole() == "Author")
-                {
-                    foreach($ent_ids = $md_con->getEntityIds() as $ent_id)
-                    {
-                        $md_ent = $md_con->getEntity($ent_id);
-                        $ent_str = $ent_str.$sep.$md_ent->getEntity();
-                        $sep = $this->md_settings->getDelimiter()." ";
-                    }
-                }
-            }
-            $ta->setValue($ent_str);
-        }
+        $ta->setValue($this->md_obj->getAuthors());
         $this->form->addItem($ta);
 
-        // copyright
-//        include_once("./Services/MetaData/classes/class.ilCopyrightInputGUI.php");
-//        $cp = new ilCopyrightInputGUI($this->lng->txt("meta_copyright"), "copyright");
-//        $cp->setCols(50);
-//        $cp->setRows(3);
-//        $desc = ilMDRights::_lookupDescription($this->md_obj->getRBACId(),
-//            $this->md_obj->getObjId());
-//        $val["ta"] = $desc;
-//        $cp->setValue($val);
-//        $this->form->addItem($cp);
 
         // typical learning time
         include_once("./Services/MetaData/classes/class.ilTypicalLearningTimeInputGUI.php");
@@ -902,9 +931,162 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
     }
 
     protected function declarePublish()
-	{
-		$link = $this->plugin->getImagePath('step4.png');
-		$this->output('<img src="'.$link.'" />');
-	}
+    {
+        $form = $this->initPublishForm();
+        $this->output($form->getHTML());
+    }
+
+    protected function initPublishForm()
+    {
+        $form = new ilPropertyFormGUI();
+        $form->setOpenTag(false);
+        $form->setCloseTag(false);
+        $form->setFormAction($this->ctrl->getFormAction($this));
+        foreach ($this->data->getParamsBySection('check_final') as $name => $param)
+        {
+            $item = $param->getFormItem();
+            $form->addItem($item);
+        }
+        return $form;
+    }
+
+    protected function saveAndPublish()
+    {
+        $form = $this->initPublishForm();
+        $ok = true;
+
+        if ($form->checkInput())
+        {
+            foreach (array_keys($this->data->getParamsBySection('check_final')) as $name)
+            {
+                $this->data->set($name, $form->getInput($name));
+            }
+            $this->data->write();
+        }
+        else
+        {
+            $ok = false;
+        }
+
+        // todo check other things
+
+        if ($ok)
+        {
+            if (!$this->md_obj->createPublicRefId($this->parent_obj))
+            {
+                ilUtil::sendFailure($this->plugin->txt('public_ref_not_created'), true);
+            }
+            elseif (!$this->md_obj->isPublicRefIdPublic())
+            {
+                ilUtil::sendFailure($this->plugin->txt('public_ref_not_public'), true);
+            }
+            else
+            {
+                $this->md_obj->publish();
+            }
+
+            $this->returnToParent();
+        }
+        else
+        {
+            $this->cmd = 'declarePublish';
+            $this->step = $this->getStepByCommand($this->cmd);
+            $form->setValuesByPost();
+            $this->output($form->getHTML());
+        }
+    }
+
+    public function getOkImage($size = 32)
+    {
+        $src = ilUtil::getImagePath('icon_ok.svg');
+        return '<img src="'.$src.'" width="'.$size.'" alt="ok" />';
+    }
+
+    public function getNotOkImage($size = 32)
+    {
+        $src = ilUtil::getImagePath('icon_not_ok.svg');
+        return '<img src="'.$src.'" width="'.$size.'" alt="not_ok" />';
+    }
+
+
+    /**
+     * Check all inputs
+     */
+    public function checkAll()
+    {
+        $d = $this->data->getAllValues();
+        $all_status = array();
+
+        // step 1
+        $ok = true;
+        $messages = [];
+        if (!($d['cr_schoepfung'] && (($d['cr_erschaffen'] && $d['cr_zustimmung']) || $d['cr_exklusiv']))) {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_cr_berechtigung');
+        }
+        if (!($d['cr_persoenlichkeit'] && $d['cr_einwilligung'] && $d['cr_musik'] && $d['cr_marken'] && $d['cr_kontext']))
+        {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_cr_sonstige_rechte');
+        }
+        $all_status[] = ['status' => $ok, 'messages' => $messages];
+
+        // step 2
+        $ok = true;
+        $messages = [];
+        $license = $this->md_obj->getCCLicense();
+        if (empty($license) || !in_array($license, $this->md_obj->ccMixer($this->data->getIncludedLicenses())))
+        {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_select_license');
+        }
+        $all_status[] = ['status' => $ok, 'messages' => $messages];
+
+        // step 3
+        $ok = true;
+        $messages = [];
+        if (empty($this->parent_obj->getTitle())
+            || empty($this->parent_obj->getDescription())
+            || empty($this->md_obj->getAuthors()))
+        {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_metadata');
+        }
+        $all_status[] = ['status' => $ok, 'messages' => $messages];
+
+        // step 4
+        $ok = true;
+        $messages = [];
+        if (!($d['ca_lizenz_selbst'] && $d['ca_lizenz_link']&& $d['ca_lizenz_link']))
+        {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_ca_selbst');
+        }
+        $messages = [];
+        if (!($d['ca_urheber'] && $d['ca_miturheber'] && $d['ca_titel'] && $d['ca_lizenz_andere'] && $d['ca_aenderungen']))
+        {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_ca_tullu');
+        }
+        $messages = [];
+        if (!($d['ca_fotos'] && $d['ca_nichtoffen'] && $d['ca_zitat'] && $d['ca_nichtkomm'] && $d['ca_quellen_check'] && $d['ca_quellen_doku']))
+        {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_ca_weitere');
+        }
+        $all_status[] = ['status' => $ok, 'messages' => $messages];
+
+        // step 5
+        $ok = true;
+        $messages = [];
+        if (!($d['cf_konsequenzen'] && $d['cf_bereit']))
+        {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_check_final');
+        }
+        $all_status[] = ['status' => $ok, 'messages' => $messages];
+
+        return $all_status;
+    }
 }
 ?>

@@ -74,6 +74,14 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
         return new ilOerInFormHelpGUI();
     }
 
+    /**
+     * Check if the object type is allowed
+     */
+    public function isAllowedType($type)
+    {
+        return in_array($type, array('file','lm','htlm','sahs','glo','wiki'));
+    }
+
 
     /**
 	 * Get a user preference

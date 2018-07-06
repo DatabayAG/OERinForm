@@ -9,12 +9,12 @@
 <!-- language file start -->
 publish_oer#:#OER-Veröffentlichung
 publish#:#Veröffentlichen
-unpublish#:#Aktualisieren
-republish#:#Zurückziehen
+unpublish#:#Zurückziehen
+republish#:#Aktualisieren
 label_published#:#Veröffentlicht
-label_ready#:#Noch nicht veröffentlicht
-label_private#:#Nicht veröffentlicht, nicht zugreifbar
-label_broken#:#PVeröffentlicht, aber nicht zugreifbar!
+label_ready#:#Nicht veröffentlicht
+label_private#:#Nicht veröffentlicht
+label_broken#:#Veröffentlicht, aber nicht in der OER-Kategorie zugreifbar!
 msg_meta_published#:#Die Metadaten wurden veröffentlicht.
 msg_meta_republished#:#Die veröffentlichten Metadaten wurden aktualisiert.
 msg_meta_unpublished#:#Die veröffentlichten Metadaten wurden zurückgezogen.
@@ -25,8 +25,10 @@ config_base#:#Grundfunktionen
 config_base_info#:#Hier stellen Sie die Grundfunktionen des Plugins ein
 wiki_ref_id#:#Hilfe-Wiki
 wiki_ref_id_info#:#Wählen Sie das importierte OERinForm-Wiki aus. Die Seiten in diesem Wiki können als Hilfeseiten bei bestimmte Funktionen eingeblendet werden.
+pub_ref_id#:#OER-Kategorie
+pub_ref_id_info#:#Kategorie im öffentlichen Bereich, in welche die veröffentlichten Materialien verknüpft werden sollen. Die Rechtevoreinstellungen in dieser Kategorie müssen alle neuen Objekte für Anonymous lesbar machen!
 wizard#:#Assistent
-wizard_finish#:#Fertigstellen
+wizard_finish#:#Freigeben
 wizard_next#:#Weiter zu Schritt %s
 wizard_previous#:#Zurück zu Schritt %s
 wizard_step#:#Schritt %s:
@@ -39,7 +41,7 @@ check_attrib_desc#:#Überprüfen Sie die richtige Auszeichnung des Materials
 describe_meta#:#Einordnen und Beschreiben
 describe_meta_desc#:#Vergeben Sie die wichtigsten Zusatzangaben, damit Ihr Inhalt mit entsprechenden Suchfiltern gefunden wird
 declare_publish#:#Einverständniserklärung und Freigabe
-declare_publish_desc#:#Mit der folgenden Einverständniserklärung geben Sie den Inhalt ans OER frei.
+declare_publish_desc#:#Mit der folgenden Einverständniserklärung geben Sie den Inhalt als OER frei. Er wird im öffentlichen Bereich sichtbar und seine Metadaten werden für OER-Verzeichnisse ausgegeben.
 cr_berechtigung#:#Urheber oder Rechteinhaber
 cr_schoepfung#:#Geistige Schöpfung
 cr_erschaffen#:#Selbst erschaffen
@@ -112,7 +114,23 @@ sl_cc_by_nc_sa_info#:#Das Werk kann frei genutzt werden, sofern die Urheberin od
 sl_cc_by_nc_nd_info#:#Das Werk kann frei genutzt werden, sofern die Urheberin oder der Urheber genannt und das Werk nicht kommerziell genutzt werden. Es darf jedoch nicht verändert werden.
 sl_other_info#:#Das Material einthält auch Werke unter anderen Lizenzen. Für diese müssen Sie selbst prüfen, ob sie mit einer CC-Lizenz vereinbar sind.
 sl_own_choice_info#:#Wählen Sie hier, die Lizenz, unter der Sie das Material veröffentlichen wollen. Die Lizenzen "CC0", "CC BY" und "CC BY-SA" gelten allgemein als OER-konform und werden von CreativeCommons.org als Free Cultural Works anerkannt.
+cf_freigabe#:#Einverständniserklärung und Freigabe
+cf_konsequenzen#:#Bleibende Lizenz
+cf_bereit#:#Veröffentlichung
+cf_konsequenzen_info#:#Ich bin mir im Klaren darüber, dass ich die Lizenz nicht wieder „zurücknehmen“ kann.
+cf_bereit_info#:#Ich bin bereit, das Material zu veröffentlichen.
 selected_license#:#Ausgewählte Lizenz
 no_cc_license#:#Keine oder andere Lizenz
 no_cc_license_info#:#Mit dieser Auswahl können Sie das Material nicht als OER veröffentlichen.
 save_and_check#:#Speichern und Prüfen
+public_ref_not_created#:#Das Objekt konnte nicht in der OER-Kategorie verknüpft werden!
+public_ref_not_public#:#Das Objekt ist in der OER-Kategorie verknüpft, aber nicht öffentlich lesbar. Bitte kontaktieren Sie Ihren Plattform-Administrator.
+fail_cr_berechtigung#:#Bearbeiten Sie "Urheber oder Rechteinhaber"
+fail_cr_sonstige_rechte#:#Bearbeiten Sie "Sonstige Rechte"
+fail_select_license#:#Ihre Lizenzwahl ist nicht geeignet
+fail_metadata#:#Sie müssen mindestens Titel, Beschreibung und Autor(en) angeben.
+fail_ca_selbst#:#Bearbeiten Sie "Lizenzangaben des eigenen Materials"
+fail_ca_tullu#:#Bearbeiten Sie die "TULLU-Regel"
+fail_ca_weitere#:#Bearbeiten Sie "Weitere Prüfungen"
+fail_check_final#:#Bearbeiten Sie die Einverständniserklärung
+

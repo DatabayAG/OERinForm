@@ -58,8 +58,8 @@ class ilOerInFormData
             'ca_quellen_check' => ilOerInFormParam::TYPE_BOOLEAN,
             'ca_quellen_doku' => ilOerInFormParam::TYPE_BOOLEAN,
         ],
-        'checklist_final' => [
-            'cf_veroeffentlichung' => ilOerInFormParam::TYPE_HEAD,
+        'check_final' => [
+            'cf_freigabe' => ilOerInFormParam::TYPE_HEAD,
             'cf_konsequenzen' => ilOerInFormParam::TYPE_BOOLEAN,
             'cf_bereit' => ilOerInFormParam::TYPE_BOOLEAN,
         ]
@@ -105,6 +105,22 @@ class ilOerInFormData
         $this->read();
 	}
 
+	public function getIncludedLicenses()
+    {
+        $this->plugin->includeClass('class.ilOerPublishMD.php');
+
+        $licenses = array();
+
+        if ($this->get('sl_cc0')) $licenses[] = ilOerPublishMD::CC0;
+        if ($this->get('sl_cc_by')) $licenses[] = ilOerPublishMD::CC_BY;
+        if ($this->get('sl_cc_by_sa')) $licenses[] = ilOerPublishMD::CC_BY_SA;
+        if ($this->get('sl_cc_by_nd')) $licenses[] = ilOerPublishMD::CC_BY_ND;
+        if ($this->get('sl_cc_by_nc')) $licenses[] = ilOerPublishMD::CC_BY_NC;
+        if ($this->get('sl_cc_by_nc_sa')) $licenses[] = ilOerPublishMD::CC_BY_NC_SA;
+        if ($this->get('sl_cc_by_nc_nd')) $licenses[] = ilOerPublishMD::CC_BY_NC_ND;
+
+        return $licenses;
+    }
 
     /**
      * Get the array of all parameters for a section
@@ -118,6 +134,20 @@ class ilOerInFormData
             $params[$name] = $this->params[$name];
         }
         return $params;
+    }
+
+    /**
+     * Get all parameters as an array
+     * @return array name => value
+     */
+    public function getAllValues()
+    {
+        $result = array();
+        foreach ($this->params as $name => $param)
+        {
+            $result[$name] = $param->value;
+        }
+        return $result;
     }
 
     /**

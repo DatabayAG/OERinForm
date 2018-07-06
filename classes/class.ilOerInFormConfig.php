@@ -38,6 +38,12 @@ class ilOerInFormConfig
             $this->plugin->txt('wiki_ref_id_info'),
             ilOerInFormParam::TYPE_REF_ID
         );
+        $params[] = ilOerInFormParam::_create(
+            'pub_ref_id',
+            $this->plugin->txt('pub_ref_id'),
+            $this->plugin->txt('pub_ref_id_info'),
+            ilOerInFormParam::TYPE_REF_ID
+        );
 
         foreach ($params as $param)
         {

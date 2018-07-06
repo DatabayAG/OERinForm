@@ -43,7 +43,6 @@ class ilOERinFormUIHookGUI extends ilUIHookPluginGUI
 				if ($this->ctrl->getCmdClass() == 'ilexportgui')
 				{
 					//$this->saveTabs('ilexportgui');
-					$this->tabs->addSubTab('oerinform', 'OER', '');
 					$this->modifyExport();
 				}
 
@@ -52,8 +51,6 @@ class ilOERinFormUIHookGUI extends ilUIHookPluginGUI
 				{
 					//$this->restoreTabs('ilexportgui');
 				}
-
-
 
 				break;
 
@@ -102,15 +99,27 @@ class ilOERinFormUIHookGUI extends ilUIHookPluginGUI
 		}
 	}
 
+    /**
+     * Check if OER function is allowed
+     * @return bool
+     */
+	protected function isAllowed()
+    {
+        $type = ilObject::_lookupType($_GET['ref_id'], true);
+        return $this->plugin_object->isAllowedType($type);
+    }
+
 	/**
 	 * Modify the toolbar of the meta data editor
 	 */
 	protected function modifyExport()
 	{
-	    global $tpl;
-		$this->plugin_object->includeClass('class.ilOerPublishGUI.php');
-		$gui = new ilOerPublishGUI();
-		$gui->addPublishInfo();
+	    if ($this->isAllowed())
+        {
+            $this->plugin_object->includeClass('class.ilOerPublishGUI.php');
+            $gui = new ilOerPublishGUI();
+            $gui->addPublishInfo();
+        }
 	}
 }
 ?>

@@ -128,29 +128,6 @@ class ilOerPublishGUI extends ilOerBaseGUI
 
 
 	/**
-	 * Publish the object
-	 */
-	public function publish()
-	{
-		$this->md_obj->publish();
-		ilUtil::sendSuccess($this->plugin->txt('msg_meta_published'), true);
-		$this->ctrl->setParameter($this,'section', $_REQUEST['section']);
-		ilUtil::redirect($_GET['return']);
-
-	}
-
-	/**
-	 * Update the publishing
-	 */
-	public function republish()
-	{
-		$this->md_obj->publish();
-		ilUtil::sendSuccess($this->plugin->txt('msg_meta_republished'), true);
-		$this->ctrl->setParameter($this,'section', $_REQUEST['section']);
-		ilUtil::redirect($_GET['return']);
-	}
-
-	/**
 	 * Reject the publishing
 	 */
 	public function unpublish()
@@ -158,7 +135,7 @@ class ilOerPublishGUI extends ilOerBaseGUI
 		$this->md_obj->unpublish();
 		ilUtil::sendSuccess($this->plugin->txt('msg_meta_unpublished'), true);
 		$this->ctrl->setParameter($this,'section', $_REQUEST['section']);
-		ilUtil::redirect($_GET['return']);
+		$this->returnToParent();
 	}
 
 
@@ -174,16 +151,17 @@ class ilOerPublishGUI extends ilOerBaseGUI
         $tpl = $this->plugin->getTemplate('tpl.publish_status.html');
         $tpl->setVariable('HEADER', $this->plugin->txt('publish_oer'));
         $tpl->setVariable('BODY', $this->md_obj->getPublishInfo());
-        $tpl->setVariable('HELP', $this->plugin->getHelpGUI()->getHelpButton('publish_oai'));
+        $tpl->setVariable('HELP', $this->plugin->getHelpGUI()->getHelpButton('oer_publishing'));
 
         $this->ctrl->setParameter($this, 'return', urlencode($_SERVER['SCRIPT_NAME'].'?'.$_SERVER['QUERY_STRING']));
 
         switch ($this->md_obj->getPublishStatus())
         {
+            case ilOerPublishMD::STATUS_PRIVATE:
             case ilOerPublishMD::STATUS_READY:
                 $button = $factory->button()->standard($this->plugin->txt('publish'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilOerPublishGUI', 'ilOerPublishWizardGUI')));
                 $tpl->setVariable('PUBLISH', $renderer->render($button));
-                break;
+            break;
 
             case ilOerPublishMD::STATUS_PUBLIC:
                 $button = $factory->button()->standard($this->plugin->txt('republish'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilOerPublishGUI', 'ilOerPublishWizardGUI')));
@@ -198,5 +176,14 @@ class ilOerPublishGUI extends ilOerBaseGUI
 
         $this->tpl->setRightContent($tpl->get());
     }
+
+    /**
+     * Return to the parent GUI
+     */
+    protected function returnToParent()
+    {
+        $this->ctrl->redirectToURL($_GET['return']);
+    }
+
 }
 ?>
