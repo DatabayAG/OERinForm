@@ -12,7 +12,11 @@ include_once("./Services/UIComponent/classes/class.ilUserInterfaceHookPlugin.php
  */
 class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
 {
+    /** @var ilOERinFormConfig */
+    protected $config;
 
+    /** @var ilOERinFormHelp */
+    protected $help;
 
 	public function getPluginName()
 	{
@@ -20,7 +24,66 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
 	}
 
 
-	/**
+    /**
+     * Get the data set for an object
+     * @param $obj_id
+     * @return ilOERinFormData
+     */
+	public function getData($obj_id)
+    {
+        $this->includeClass('class.ilOERinFormData.php');
+        return new ilOERinFormData($this, $obj_id);
+    }
+
+
+    /**
+     * Get the plugin configuration
+     * @return ilOERinFormConfig
+     */
+    public function getConfig()
+    {
+        if (!isset($this->config))
+        {
+            $this->includeClass('class.ilOERinFormConfig.php');
+            $this->config = new ilOERinFormConfig($this);
+        }
+        return $this->config;
+    }
+
+    /**
+     * Get the plugin configuration
+     * @return ilOERinFormHelp
+     */
+    public function getHelp()
+    {
+        if (!isset($this->help))
+        {
+            $this->includeClass('class.ilOERinFormHelp.php');
+            $this->help = new ilOERinFormHelp($this);
+        }
+        return $this->help;
+    }
+
+    /**
+     * Get the plugin configuration
+     * @return ilOERinFormHelpGUI
+     */
+    public function getHelpGUI()
+    {
+        $this->includeClass('class.ilOERinFormHelpGUI.php');
+        return new ilOERinFormHelpGUI();
+    }
+
+    /**
+     * Check if the object type is allowed
+     */
+    public function isAllowedType($type)
+    {
+        return in_array($type, array('file','lm','htlm','sahs','glo','wiki'));
+    }
+
+
+    /**
 	 * Get a user preference
 	 * @param string	$name
 	 * @param mixed		$default
@@ -50,41 +113,6 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
 	{
 		global $ilUser;
 		$ilUser->writePref($this->getId().'_'.$name, $value);
-	}
-
-
-	/**
-	 * Get the id of a wiki page that can be directly shown as help
-	 * @todo: ths has to be configured
-	 *
-	 * @param string $a_help_id
-	 * @return int
-	 */
-	public function getWikiHelpPageId($a_help_id)
-	{
-		switch ($a_help_id)
-		{
-			case 'publish_oai':
-				return 4;
-		}
-		return 0;
-	}
-
-	/**
-	 * Get the url of a wiki page that can be linked for details
-	 * @todo: ths has to be configured
-	 *
-	 * @param string $a_help_id
-	 * @return int
-	 */
-	public function getWikiHelpDetailsUrl($a_help_id)
-	{
-		switch ($a_help_id)
-		{
-			case 'publish_oai':
-				return 'goto.php?target=wiki_wpage_3_71&client_id=OERinForm';
-		}
-		return 0;
 	}
 }
 

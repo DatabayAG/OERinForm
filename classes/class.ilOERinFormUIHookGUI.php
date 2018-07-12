@@ -40,16 +40,16 @@ class ilOERinFormUIHookGUI extends ilUIHookPluginGUI
 				$this->tabs = $DIC->tabs();
 
 				// Standard meta data editor is shown
-				if ($this->ctrl->getCmdClass() == 'ilmdeditorgui')
+				if ($this->ctrl->getCmdClass() == 'ilexportgui')
 				{
-					$this->saveTabs('ilmdeditorgui');
-					$this->modifyMetaDataToolbar();
+					//$this->saveTabs('ilexportgui');
+					$this->modifyExport();
 				}
 
 				 // OER publishing page is shown
-				if ($this->ctrl->getCmdClass()  == 'class.ilOerPublishGUI')
+				if (in_array($this->ctrl->getCmdClass(), array('iloerpublishgui')))
 				{
-					$this->restoreTabs('ilmdeditorgui');
+					//$this->restoreTabs('ilexportgui');
 				}
 
 				break;
@@ -85,11 +85,11 @@ class ilOERinFormUIHookGUI extends ilUIHookPluginGUI
 			$this->tabs->sub_target = $_SESSION['OERinForm'][$a_context]['TabSubTarget'];
 		}
 
-		if ($a_context == 'ilmdeditorgui')
+		if ($a_context == 'ilexportgui')
 		{
 			foreach ($this->tabs->target as $td)
 			{
-				if (strpos(strtolower($td['link']),'ilmdeditorgui') !== false)
+				if (strpos(strtolower($td['link']),'ilexportgui') !== false)
 				{
 					// this works when done in handler for the sub_tabs
 					// because the tabs are rendered after the sub tabs
@@ -99,14 +99,27 @@ class ilOERinFormUIHookGUI extends ilUIHookPluginGUI
 		}
 	}
 
+    /**
+     * Check if OER function is allowed
+     * @return bool
+     */
+	protected function isAllowed()
+    {
+        $type = ilObject::_lookupType($_GET['ref_id'], true);
+        return $this->plugin_object->isAllowedType($type);
+    }
+
 	/**
 	 * Modify the toolbar of the meta data editor
 	 */
-	protected function modifyMetaDataToolbar()
+	protected function modifyExport()
 	{
-		$this->plugin_object->includeClass('class.ilOerPublishGUI.php');
-		$gui = new ilOerPublishGUI();
-		$gui->modifyMetaDataToolbar();
+	    if ($this->isAllowed())
+        {
+            $this->plugin_object->includeClass('class.ilOERinFormPublishGUI.php');
+            $gui = new ilOERinFormPublishGUI();
+            $gui->addPublishInfo();
+        }
 	}
 }
 ?>

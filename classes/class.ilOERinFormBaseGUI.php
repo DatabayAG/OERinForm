@@ -5,7 +5,7 @@
 /**
  * Base class for GUIs of the OER plugin
  */
-class ilOerBaseGUI
+class ilOERinFormBaseGUI
 {
 	/** @var  ilAccessHandler $access */
 	protected $access;
@@ -30,7 +30,7 @@ class ilOerBaseGUI
 
 
 	/**
-	 * ilOerBaseGUI constructor
+	 * ilOERinFormBaseGUI constructor
 	 */
 	public function __construct()
 	{
@@ -52,8 +52,8 @@ class ilOerBaseGUI
 	 * @param string $a_cmd
 	 * @return string
 	 */
-	protected function getLinkTarget($a_cmd = '')
+	protected function getLinkTarget($a_cmd = '', $a_anchor = '', $a_async = false)
 	{
-		return $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', get_class($this)), $a_cmd);
+		return $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', get_class($this)), $a_cmd, $a_anchor, $a_async);
 	}
 }
