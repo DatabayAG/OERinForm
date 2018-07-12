@@ -12,10 +12,10 @@ include_once("./Services/UIComponent/classes/class.ilUserInterfaceHookPlugin.php
  */
 class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
 {
-    /** @var ilOerInFormConfig */
+    /** @var ilOERinFormConfig */
     protected $config;
 
-    /** @var ilOerInFormHelp */
+    /** @var ilOERinFormHelp */
     protected $help;
 
 	public function getPluginName()
@@ -27,51 +27,51 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
     /**
      * Get the data set for an object
      * @param $obj_id
-     * @return ilOerInFormData
+     * @return ilOERinFormData
      */
 	public function getData($obj_id)
     {
-        $this->includeClass('class.ilOerInFormData.php');
-        return new ilOerInFormData($this, $obj_id);
+        $this->includeClass('class.ilOERinFormData.php');
+        return new ilOERinFormData($this, $obj_id);
     }
 
 
     /**
      * Get the plugin configuration
-     * @return ilOerInFormConfig
+     * @return ilOERinFormConfig
      */
     public function getConfig()
     {
         if (!isset($this->config))
         {
-            $this->includeClass('class.ilOerInFormConfig.php');
-            $this->config = new ilOerInformConfig($this);
+            $this->includeClass('class.ilOERinFormConfig.php');
+            $this->config = new ilOERinFormConfig($this);
         }
         return $this->config;
     }
 
     /**
      * Get the plugin configuration
-     * @return ilOerInFormHelp
+     * @return ilOERinFormHelp
      */
     public function getHelp()
     {
         if (!isset($this->help))
         {
-            $this->includeClass('class.ilOerInFormHelp.php');
-            $this->help = new ilOerInFormHelp($this);
+            $this->includeClass('class.ilOERinFormHelp.php');
+            $this->help = new ilOERinFormHelp($this);
         }
         return $this->help;
     }
 
     /**
      * Get the plugin configuration
-     * @return ilOerInFormHelpGUI
+     * @return ilOERinFormHelpGUI
      */
     public function getHelpGUI()
     {
-        $this->includeClass('class.ilOerInFormHelpGUI.php');
-        return new ilOerInFormHelpGUI();
+        $this->includeClass('class.ilOERinFormHelpGUI.php');
+        return new ilOERinFormHelpGUI();
     }
 
     /**

@@ -7,7 +7,7 @@
 * @version $Id: $
 *
 */
-class ilOerPublishWizardGUI extends ilOerBaseGUI
+class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 {
 	/** @var  int parent object ref_id */
 	protected $parent_ref_id;
@@ -21,7 +21,7 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 	/** @var  ilObject $parent_obj */
 	protected $parent_obj;
 
-	/** @var  ilOerPublishMD $md_obj */
+	/** @var  ilOERinFormPublishMD $md_obj */
 	protected $md_obj;
 
 	/**
@@ -37,7 +37,7 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 	protected $step = array();
 
 
-    /** @var ilOerInFormData */
+    /** @var ilOERinFormData */
 	protected $data;
 
 	/**
@@ -81,7 +81,8 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 				'title_var' => 'declare_publish',
 				'desc_var' => 'declare_publish_desc',
 				'prev_cmd' => 'checkAttrib',
-				'next_cmd' => 'final_publish'
+				'next_cmd' => 'saveAndPublish',
+                'help_id' => 'final_publish',
 		)
  	);
 
@@ -101,8 +102,8 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
 		$this->parent_obj = ilObjectFactory::getInstanceByRefId($this->parent_ref_id);
 		$this->parent_gui_class = ilObjectFactory::getClassByType($this->parent_type).'GUI';
 
-		$this->plugin->includeClass('class.ilOerPublishMD.php');
-		$this->md_obj = new ilOerPublishMD($this->parent_obj->getId(), $this->parent_obj->getId(), $this->parent_type);
+		$this->plugin->includeClass('class.ilOERinFormPublishMD.php');
+		$this->md_obj = new ilOERinFormPublishMD($this->parent_obj->getId(), $this->parent_obj->getId(), $this->parent_type);
 		$this->md_obj->setPlugin($this->plugin);
 
 		$this->data = $this->plugin->getData($this->parent_obj->getId());
@@ -358,31 +359,31 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
         {
             switch ($cc)
             {
-                case ilOerPublishMD::CC0:
+                case ilOERinFormPublishMD::CC0:
                     $title = $this->plugin->txt('sl_cc0');
                     $info = $this->plugin->txt('sl_cc0_info');
                     break;
-                case ilOerPublishMD::CC_BY:
+                case ilOERinFormPublishMD::CC_BY:
                     $title = $this->plugin->txt('sl_cc_by');
                     $info = $this->plugin->txt('sl_cc_by_info');
                     break;
-                case ilOerPublishMD::CC_BY_SA:
+                case ilOERinFormPublishMD::CC_BY_SA:
                     $title = $this->plugin->txt('sl_cc_by_sa');
                     $info = $this->plugin->txt('sl_cc_by_sa_info');
                     break;
-                case ilOerPublishMD::CC_BY_ND:
+                case ilOERinFormPublishMD::CC_BY_ND:
                     $title = $this->plugin->txt('sl_cc_by_nd');
                     $info = $this->plugin->txt('sl_cc_by_nd_info');
                     break;
-                case ilOerPublishMD::CC_BY_NC:
+                case ilOERinFormPublishMD::CC_BY_NC:
                     $title = $this->plugin->txt('sl_cc_by_nc');
                     $info = $this->plugin->txt('sl_cc_by_nc_info');
                     break;
-                case ilOerPublishMD::CC_BY_NC_SA:
+                case ilOERinFormPublishMD::CC_BY_NC_SA:
                     $title = $this->plugin->txt('sl_cc_by_nc_sa');
                     $info = $this->plugin->txt('sl_cc_by_nc_sa_info');
                     break;
-                case ilOerPublishMD::CC_BY_NC_ND:
+                case ilOERinFormPublishMD::CC_BY_NC_ND:
                     $title = $this->plugin->txt('sl_cc_by_nc_nd');
                     $info = $this->plugin->txt('sl_cc_by_nc_nd_info');
                     break;
@@ -395,7 +396,7 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
             else
             {
                 $title .= ' '. $this->getOkImage(12);
-                $disabled = true;
+                $disabled = false;
             }
             $option = new ilRadioOption($title, $cc, $info);
             $option->setDisabled($disabled);
@@ -498,7 +499,7 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
         return $form;
     }
 
-    protected function saveAttribAndDescribeMeta()
+    protected function saveAttribAndDeclarePublish()
     {
         $form = $this->initAttribCheckForm();
         if ($form->checkInput())
@@ -508,7 +509,7 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
                 $this->data->set($name, $form->getInput($name));
             }
             $this->data->write();
-            $this->ctrl->redirect($this, 'describeMeta');
+            $this->ctrl->redirect($this, 'declarePublish');
         }
         else
         {
@@ -1046,7 +1047,6 @@ class ilOerPublishWizardGUI extends ilOerBaseGUI
         $ok = true;
         $messages = [];
         if (empty($this->parent_obj->getTitle())
-            || empty($this->parent_obj->getDescription())
             || empty($this->md_obj->getAuthors()))
         {
             $ok = false;

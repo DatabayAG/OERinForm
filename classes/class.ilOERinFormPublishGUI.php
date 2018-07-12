@@ -1,7 +1,7 @@
 <?php
 // Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
-require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/OERinForm/classes/class.ilOerBaseGUI.php');
+require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/OERinForm/classes/class.ilOERinFormBaseGUI.php');
 
 /**
  * GUI for OER publishing functions
@@ -9,10 +9,10 @@ require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  * @author Fred Neumann <fred.neumann@fau.de>
  * @version $Id$
  *
- * @ilCtrl_IsCalledBy ilOerPublishGUI: ilUIPluginRouterGUI
- * @ilCtrl_Calls ilOerPublishGUI: ilOerPublishWizardGUI
+ * @ilCtrl_IsCalledBy ilOERinFormPublishGUI: ilUIPluginRouterGUI
+ * @ilCtrl_Calls ilOERinFormPublishGUI: ilOERinFormPublishWizardGUI
  */
-class ilOerPublishGUI extends ilOerBaseGUI
+class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
 {
 
 	/** @var  int parent object ref_id */
@@ -27,7 +27,7 @@ class ilOerPublishGUI extends ilOerBaseGUI
 	/** @var  ilObject $parent_obj */
 	protected $parent_obj;
 
-	/** @var  ilOerPublishMD $md_obj */
+	/** @var  ilOERinFormPublishMD $md_obj */
 	protected $md_obj;
 
 	/**
@@ -44,8 +44,8 @@ class ilOerPublishGUI extends ilOerBaseGUI
 		$this->parent_obj = ilObjectFactory::getInstanceByRefId($this->parent_ref_id);
 		$this->parent_gui_class = ilObjectFactory::getClassByType($this->parent_type).'GUI';
 
-		$this->plugin->includeClass('class.ilOerPublishMD.php');
-		$this->md_obj = new ilOerPublishMD($this->parent_obj->getId(), $this->parent_obj->getId(), $this->parent_type);
+		$this->plugin->includeClass('class.ilOERinFormPublishMD.php');
+		$this->md_obj = new ilOERinFormPublishMD($this->parent_obj->getId(), $this->parent_obj->getId(), $this->parent_type);
 		$this->md_obj->setPlugin($this->plugin);
     }
 
@@ -70,10 +70,10 @@ class ilOerPublishGUI extends ilOerBaseGUI
 
 		switch ($next_class)
 		{
-			case 'iloerpublishwizardgui':
+			case 'iloerinformpublishwizardgui':
 				$this->prepareOutput();
-				$this->plugin->includeClass('class.ilOerPublishWizardGUI.php');
-				$pubGUI = new ilOerPublishWizardGUI();
+				$this->plugin->includeClass('class.ilOERinFormPublishWizardGUI.php');
+				$pubGUI = new ilOERinFormPublishWizardGUI();
 				$this->ctrl->forwardCommand($pubGUI);
 				break;
 
@@ -157,18 +157,18 @@ class ilOerPublishGUI extends ilOerBaseGUI
 
         switch ($this->md_obj->getPublishStatus())
         {
-            case ilOerPublishMD::STATUS_PRIVATE:
-            case ilOerPublishMD::STATUS_READY:
-                $button = $factory->button()->standard($this->plugin->txt('publish'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilOerPublishGUI', 'ilOerPublishWizardGUI')));
+            case ilOERinFormPublishMD::STATUS_PRIVATE:
+            case ilOERinFormPublishMD::STATUS_READY:
+                $button = $factory->button()->standard($this->plugin->txt('publish'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilOERinFormPublishGUI', 'ilOERinFormPublishWizardGUI')));
                 $tpl->setVariable('PUBLISH', $renderer->render($button));
             break;
 
-            case ilOerPublishMD::STATUS_PUBLIC:
-                $button = $factory->button()->standard($this->plugin->txt('republish'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilOerPublishGUI', 'ilOerPublishWizardGUI')));
+            case ilOERinFormPublishMD::STATUS_PUBLIC:
+                $button = $factory->button()->standard($this->plugin->txt('republish'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilOERinFormPublishGUI', 'ilOERinFormPublishWizardGUI')));
                 $tpl->setVariable('REPUBLISH', $renderer->render($button));
                 break;
 
-            case ilOerPublishMD::STATUS_BROKEN:
+            case ilOERinFormPublishMD::STATUS_BROKEN:
                 $button = $factory->button()->standard($this->plugin->txt('unpublish'), $this->getLinkTarget('unpublish'));
                 $tpl->setVariable('UNPUBLISH', $renderer->render($button));
                 break;

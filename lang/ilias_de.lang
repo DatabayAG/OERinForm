@@ -128,9 +128,11 @@ public_ref_not_public#:#Das Objekt ist in der OER-Kategorie verknüpft, aber nic
 fail_cr_berechtigung#:#Bearbeiten Sie "Urheber oder Rechteinhaber"
 fail_cr_sonstige_rechte#:#Bearbeiten Sie "Sonstige Rechte"
 fail_select_license#:#Ihre Lizenzwahl ist nicht geeignet
-fail_metadata#:#Sie müssen mindestens Titel, Beschreibung und Autor(en) angeben.
+fail_metadata#:#Sie müssen mindestens Titel und Autor(en) angeben.
 fail_ca_selbst#:#Bearbeiten Sie "Lizenzangaben des eigenen Materials"
 fail_ca_tullu#:#Bearbeiten Sie die "TULLU-Regel"
 fail_ca_weitere#:#Bearbeiten Sie "Weitere Prüfungen"
 fail_check_final#:#Bearbeiten Sie die Einverständniserklärung
+basic_configuration#:#Grund-Konfiguration
+help_configuration#:#Hilfe-Konfiguration
 

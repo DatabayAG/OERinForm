@@ -7,7 +7,7 @@
  * @author Fred Neumann <fred.neumann@fau.de>
  *
  */
-class ilOerInFormHelp
+class ilOERinFormHelp
 {
     protected $meta_rec_title = 'OERinForm';
     protected $meta_field_title = "ID";
@@ -16,14 +16,14 @@ class ilOerInFormHelp
     /** @var ilOERinFormPlugin */
     protected $plugin;
 
-    /** @var ilOerInFormConfig */
+    /** @var ilOERinFormConfig */
     protected $config;
 
     /** @var array help_id => page_id */
     protected $page_map = array();
 
     /**
-     * ilOerInFormHelp constructor.
+     * ilOERinFormHelp constructor.
      * @param $plugin
      */
     public function __construct($plugin)
@@ -39,7 +39,7 @@ class ilOerInFormHelp
      */
     public function getAllHelpIds()
     {
-        return array('publish_oai');
+        return array();
     }
 
     /**

@@ -116,8 +116,8 @@ class ilOERinFormUIHookGUI extends ilUIHookPluginGUI
 	{
 	    if ($this->isAllowed())
         {
-            $this->plugin_object->includeClass('class.ilOerPublishGUI.php');
-            $gui = new ilOerPublishGUI();
+            $this->plugin_object->includeClass('class.ilOERinFormPublishGUI.php');
+            $gui = new ilOERinFormPublishGUI();
             $gui->addPublishInfo();
         }
 	}

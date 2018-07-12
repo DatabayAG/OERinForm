@@ -5,7 +5,7 @@
 /**
  * Base class for GUIs of the OER plugin
  */
-class ilOerBaseGUI
+class ilOERinFormBaseGUI
 {
 	/** @var  ilAccessHandler $access */
 	protected $access;
@@ -30,7 +30,7 @@ class ilOerBaseGUI
 
 
 	/**
-	 * ilOerBaseGUI constructor
+	 * ilOERinFormBaseGUI constructor
 	 */
 	public function __construct()
 	{

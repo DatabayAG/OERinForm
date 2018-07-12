@@ -10,7 +10,7 @@ include_once("./Services/MetaData/classes/class.ilMD.php");
  * @version $Id$
  *
  */
-class ilOerPublishMD extends ilMD
+class ilOERinFormPublishMD extends ilMD
 {
     const CC0 = 'cc0';
     const CC_BY = 'cc_by';

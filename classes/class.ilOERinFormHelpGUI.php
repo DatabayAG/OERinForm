@@ -1,24 +1,24 @@
 <?php
 // Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
-require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/OERinForm/classes/class.ilOerBaseGUI.php');
+require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/OERinForm/classes/class.ilOERinFormBaseGUI.php');
 
 /**
  * Help GUI functions for OerInform
  *
  * @author Fred Neumann <fred.neumann@fau.de>
  *
- *  @ilCtrl_isCalledBy ilOerInFormHelpGUI: ilUIPluginRouterGUI
- *  @ilCtrl_Calls ilOerInFormHelpGUI: ilWikiPageGUI
+ *  @ilCtrl_isCalledBy ilOERinFormHelpGUI: ilUIPluginRouterGUI
+ *  @ilCtrl_Calls ilOERinFormHelpGUI: ilWikiPageGUI
  */
-class ilOerInFormHelpGUI extends ilOerBaseGUI
+class ilOERinFormHelpGUI extends ilOERinFormBaseGUI
 {
 
-    /** @var ilOerInFormHelp */
+    /** @var ilOERinFormHelp */
     protected $help;
 
     /**
-     * ilOerInFormHelp constructor.
+     * ilOERinFormHelp constructor.
      * @param $plugin
      */
     public function __construct()
@@ -87,6 +87,7 @@ class ilOerInFormHelpGUI extends ilOerBaseGUI
 
         $page_id = $this->plugin->getHelp()->getPageId($_GET['help_id']);
 
+        $body = 'Leider nicht gefunden.';
         if  (!empty($page_id))
         {
             $tpl = $this->plugin->getTemplate('tpl.help_page.html');

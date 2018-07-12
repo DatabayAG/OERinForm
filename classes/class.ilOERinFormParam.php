@@ -1,10 +1,12 @@
 <?php
 // Copyright (c) 2018 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
+require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/OERinForm/classes/form/class.ilOERinFormRepositorySelectInputGUI.php');
+
 /**
- * Class ilOerInFormParam
+ * Class ilOERinFormParam
  */
-class ilOerInFormParam
+class ilOERinFormParam
 {
 	/**
 	 * Defined parameter types
@@ -53,7 +55,7 @@ class ilOerInFormParam
      * @param string $a_description
      * @param string $a_type
 	 * @param mixed $a_value
-     * @return ilOerInFormParam
+     * @return ilOERinFormParam
      */
     public static function _create($a_name, $a_title, $a_description, $a_type = self::TYPE_TEXT, $a_value = null)
     {
@@ -129,7 +131,8 @@ class ilOerInFormParam
                 $item->setValue($this->value);
                 break;
             case self::TYPE_REF_ID:
-                $item = new ilRepositorySelector2InputGUI($title, $postvar);
+                $item = new ilOERinFormRepositorySelectInputGUI($title, $postvar);
+                $item->setSelectableTypes(['wiki']);
                 $item->setValue($this->value);
                 break;
         }

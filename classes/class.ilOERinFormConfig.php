@@ -2,15 +2,15 @@
 // Copyright (c) 2018 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
 /**
- * OerInForm plugin config class
+ * OERinForm plugin config class
  *
  * @author Fred Neumann <fred.neumann@ili.fau.de>
  *
  */
-class ilOerInFormConfig
+class ilOERinFormConfig
 {
 	/**
-	 * @var ilOerInFormParam[]	$params		parameters: 	name => ilOerInFormParam
+	 * @var ilOERinFormParam[]	$params		parameters: 	name => ilOERinFormParam
 	 */
 	protected $params = array();
 
@@ -21,28 +21,28 @@ class ilOerInFormConfig
 	public function __construct($a_plugin_object = "")
 	{
 		$this->plugin = $a_plugin_object;
-		$this->plugin->includeClass('class.ilOerInFormParam.php');
+		$this->plugin->includeClass('class.ilOERinFormParam.php');
 
-		/** @var ilOerInFormParam[] $params */
+		/** @var ilOERinFormParam[] $params */
 		$params = array();
 
-        $params[] = ilOerInFormParam::_create(
+        $params[] = ilOERinFormParam::_create(
             'config_base',
             $this->plugin->txt('config_base'),
             $this->plugin->txt('config_base_info'),
-            ilOerInFormParam::TYPE_HEAD
+            ilOERinFormParam::TYPE_HEAD
         );
-        $params[] = ilOerInFormParam::_create(
+        $params[] = ilOERinFormParam::_create(
             'wiki_ref_id',
             $this->plugin->txt('wiki_ref_id'),
             $this->plugin->txt('wiki_ref_id_info'),
-            ilOerInFormParam::TYPE_REF_ID
+            ilOERinFormParam::TYPE_REF_ID
         );
-        $params[] = ilOerInFormParam::_create(
+        $params[] = ilOERinFormParam::_create(
             'pub_ref_id',
             $this->plugin->txt('pub_ref_id'),
             $this->plugin->txt('pub_ref_id_info'),
-            ilOerInFormParam::TYPE_REF_ID
+            ilOERinFormParam::TYPE_REF_ID
         );
 
         foreach ($params as $param)
@@ -54,7 +54,7 @@ class ilOerInFormConfig
 
     /**
      * Get the array of all parameters
-     * @return ilOerInFormParam[]
+     * @return ilOERinFormParam[]
      */
 	public function getParams()
     {
