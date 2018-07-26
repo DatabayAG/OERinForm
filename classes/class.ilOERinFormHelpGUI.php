@@ -9,7 +9,6 @@ require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  * @author Fred Neumann <fred.neumann@fau.de>
  *
  *  @ilCtrl_isCalledBy ilOERinFormHelpGUI: ilUIPluginRouterGUI
- *  @ilCtrl_Calls ilOERinFormHelpGUI: ilWikiPageGUI
  */
 class ilOERinFormHelpGUI extends ilOERinFormBaseGUI
 {
@@ -51,11 +50,16 @@ class ilOERinFormHelpGUI extends ilOERinFormBaseGUI
         $factory = $DIC->ui()->factory();
         $renderer = $DIC->ui()->renderer();
 
-        $modal = $this->getHelpModal($help_id);
-        $button = $factory->button()->standard($this->lng->txt('help'), '')
-            ->withOnClick($modal->getShowSignal());
+        if ($this->help->isPageAvailable($help_id))
+        {
+            $modal = $this->getHelpModal($help_id);
+            $button = $factory->button()->standard($this->lng->txt('help'), '')
+                ->withOnClick($modal->getShowSignal());
 
-        return $renderer->render(array($button, $modal));
+            return $renderer->render(array($button, $modal));
+        }
+
+        return '';
     }
 
 
@@ -85,19 +89,27 @@ class ilOERinFormHelpGUI extends ilOERinFormBaseGUI
         $factory = $DIC->ui()->factory();
         $renderer = $DIC->ui()->renderer();
 
-        $page_id = $this->plugin->getHelp()->getPageId($_GET['help_id']);
+        $page_id = $this->help->getPageId($_GET['help_id']);
 
-        $body = 'Leider nicht gefunden.';
+        $body = $this->plugin->txt('help_page_not_found');
         if  (!empty($page_id))
         {
             $tpl = $this->plugin->getTemplate('tpl.help_page.html');
 
-            require_once('Modules/Wiki/classes/class.ilWikiPageGUI.php');
+            //
+            // Prepare the controller for links on the presented wiki page (tricky)
+            //
+            $this->ctrl->initBaseClass('ilwikihandlergui');
+            $this->ctrl->getCallStructure('ilwikihandlergui');
+            $this->ctrl->setParameterByClass('ilobjwikigui', 'ref_id', $this->help->getWikiRefId());
+            $array = $this->ctrl->getParameterArrayByClass(['ilwikihandlergui','ilobjwikigui']);
+            $this->ctrl->current_node = $array['cmdNode'];
+
             $page_gui = new ilWikiPageGUI($page_id);
             if (isset($page_gui))
             {
                 $page_gui->setTemplateOutput(false);
-                $page_gui->setOutputMode(IL_PAGE_PRESENTATION);
+                $page_gui->setOutputMode(IL_PAGE_PRINT);
                 $page_gui->setEnabledTabs(false);
 
                 $this->tpl->addCss('Services/COPage/css/content.css"');
@@ -109,9 +121,13 @@ class ilOERinFormHelpGUI extends ilOERinFormBaseGUI
             $body = $tpl->get();
         }
 
-        $button = $factory->button()->standard($this->plugin->txt('more_help'), $this->help->getDetailsUrl($_GET['help_id']));
-        $modal = $factory->modal()->roundtrip($this->lng->txt('help'), $factory->legacy($body))
-            ->withActionButtons(array($button));
+        $modal = $factory->modal()->roundtrip($this->lng->txt('help'), $factory->legacy($body))->withCancelButtonLabel('close');
+
+        if ($this->help->isWikiReadable())
+        {
+            $button = $factory->button()->standard($this->plugin->txt('more_help'), $this->help->getDetailsUrl($_GET['help_id']));
+            $modal = $modal->withActionButtons(array($button));
+        }
 
         echo $renderer->render($modal);
         exit;

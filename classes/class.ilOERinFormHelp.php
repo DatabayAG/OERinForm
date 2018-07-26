@@ -12,6 +12,12 @@ class ilOERinFormHelp
     protected $meta_rec_title = 'OERinForm';
     protected $meta_field_title = "ID";
 
+    /** @var string[] is for connecting the help wiki pages */
+    protected $help_ids = [
+      'oer_publishing', 'oer_test'
+    ];
+
+
 
     /** @var ilOERinFormPlugin */
     protected $plugin;
@@ -39,7 +45,7 @@ class ilOERinFormHelp
      */
     public function getAllHelpIds()
     {
-        return array();
+        return $this->help_ids;
     }
 
     /**
@@ -52,6 +58,28 @@ class ilOERinFormHelp
         return isset($this->page_map[$a_help_id]);
     }
 
+
+    /**
+     * Check if the help wiki can be read by the user
+     * @return bool
+     */
+    public function isWikiReadable()
+    {
+        global $DIC;
+        $ilAccess = $DIC->access();
+        $ref_id = $this->getWikiRefId();
+
+        return $ilAccess->checkAccess('read', '', $ref_id);
+    }
+
+    /**
+     * Get theref_id of hte help wiki
+     * @return mixed
+     */
+    public function getWikiRefId()
+    {
+        return  $this->config->get('wiki_ref_id');
+    }
 
     /**
      * Get the id of a wiki page that can be directly shown as help
@@ -77,8 +105,7 @@ class ilOERinFormHelp
      */
     public function getDetailsUrl($a_help_id)
     {
-        $ref_id = $this->config->get('wiki_ref_id');
-
+        $ref_id = $this->getWikiRefId();
         if ($this->isPageAvailable($a_help_id))
         {
             return 'goto.php?target=wiki_wpage_'. $this->getPageId($a_help_id) .'_' . $ref_id;
@@ -99,7 +126,7 @@ class ilOERinFormHelp
     {
         global $DIC;
         $ilAccess = $DIC->access();
-        $ref_id = $this->plugin->getConfig()->get('wiki_ref_id');
+        $ref_id = $this->getWikiRefId();
         $obj_id = ilObject::_lookupObjectId($ref_id);
 
         if (empty($obj_id))
@@ -107,12 +134,8 @@ class ilOERinFormHelp
             return;
         }
 
-        if (!$ilAccess->checkAccess('read', '', $ref_id))
-        {
-            return;
-        }
+        $recs = ilAdvancedMDRecord::_getSelectedRecordsByObject("wiki", $ref_id, "wpg");
 
-        $recs = ilAdvancedMDRecord::_getSelectedRecordsByObject("wiki", $this->config->get('wiki_ref_id'), "wpg");
         /** @var ilAdvancedMDRecord $record */
         foreach($recs as $record)
         {
@@ -121,7 +144,6 @@ class ilOERinFormHelp
                 /** @var  ilAdvancedMDFieldDefinition $field */
                 foreach(ilAdvancedMDFieldDefinition::getInstancesByRecordId($record->getRecordId(), false) as $field)
                 {
-                    //
                     if ($field->getTitle() == $this->meta_field_title)
                     {
                         $field_form = ilADTFactory::getInstance()->getSearchBridgeForDefinitionInstance($field->getADTDefinition(), true, false);

@@ -80,25 +80,30 @@ class ilOERinFormConfigGUI extends ilPluginConfigGUI
 	}
 
 	/**
-	 * Show configuration screen screen
+	 * Show base configuration screen
 	 */
 	protected function configure()
 	{
-	    $this->plugin->getHelp();
-		global $tpl;
 		$form = $this->initBasicConfigurationForm();
-		$tpl->setContent($form->getHTML());
+		$this->tpl->setContent($form->getHTML());
 	}
 
     /**
-     * Show configuration screen screen
+     * Show help configuration screen
      */
     protected function configureHelp()
     {
-        $this->plugin->getHelp();
-        global $tpl;
         $form = $this->initHelpConfigurationForm();
-        $tpl->setContent($form->getHTML());
+        $content = $form->getHTML();
+
+        if ($this->plugin->getHelp()->getWikiRefId())
+        {
+            $this->plugin->includeClass('class.ilOERinFormHelpTableGUI.php');
+            $table = new ilOERinFormHelpTableGUI($this,'configureHelp');
+            $content .= $table->getHTML();
+        }
+
+        $this->tpl->setContent($content);
     }
 
 
