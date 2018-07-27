@@ -46,43 +46,38 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 	protected $steps = array (                              		// list if all visible steps
 		array (
 				'cmd' => 'checkRights',             			// step command
+                'help_id' => 'check_rights',
 				'title_var' => 'check_rights',  				// lang var for title
 				'desc_var' => 'check_rights_desc',      		// lang var for description
-				'prev_cmd' => '',                       		// command of previous step
 				'next_cmd' => 'saveRightsAndSelectLicense',    	// command of next step
-				'help_id' => 'check_rights',
 		),
 		array (
 				'cmd' => 'selectLicense',
+                'help_id' => 'select_license',
 				'title_var' => 'select_license',
 				'desc_var' => 'select_license_desc',
-				'prev_cmd' => 'checkRights',
 				'next_cmd' => 'saveLicenseAndDescribeMeta',
-            	'help_id' => 'select_license',
 		),
         array (
 				'cmd' => 'describeMeta',
+                'help_id' => 'declare_meta',
 				'title_var' => 'describe_meta',
 				'desc_var' => 'describe_meta_desc',
-				'prev_cmd' => 'selectLicense',
 				'next_cmd' => 'saveMetaAndCheckAttrib',
-                'help_id' => 'declare_meta',
         ),
 		array (
 				'cmd' => 'checkAttrib',
+                'help_id' => 'check_attrib',
 				'title_var' => 'check_attrib',
 				'desc_var' => 'check_attrib_desc',
-				'prev_cmd' => 'describeMeta',
 				'next_cmd' => 'saveAttribAndDeclarePublish',
-				'help_id' => 'check_attrib',
 		),
 		array (
 				'cmd' => 'declarePublish',
+                'help_id' => 'final_publish',
 				'title_var' => 'declare_publish',
 				'desc_var' => 'declare_publish_desc',
-				'prev_cmd' => 'checkAttrib',
 				'next_cmd' => 'saveAndPublish',
-                'help_id' => 'final_publish',
 		)
  	);
 
@@ -238,13 +233,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 			require_once("./Services/UIComponent/Toolbar/classes/class.ilToolbarGUI.php");
 			$tb = new ilToolbarGUI();
 
-//			if ($this->step['prev_cmd'])
-//			{
-//				$button = ilSubmitButton::getInstance();
-//				$button->setCaption(sprintf($this->plugin->txt('wizard_previous'),$stepnum -1 ), false);
-//				$button->setCommand($this->step['prev_cmd']);
-//				$tb->addButtonInstance($button);
-//			}
 			if ($this->step['next_cmd'] and $stepnum == count($this->steps))
 			{
                 $button = ilSubmitButton::getInstance();
@@ -277,6 +265,106 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 		$this->tpl->show();
 	}
 
+    /**
+     * Get an icon showing success
+     * @param int $size
+     * @return string
+     */
+    public function getOkImage($size = 32)
+    {
+        $src = ilUtil::getImagePath('icon_ok.svg');
+        return '<img src="'.$src.'" width="'.$size.'" alt="ok" />';
+    }
+
+    /**
+     * Get an icon showinga failure
+     * @param int $size
+     * @return string
+     */
+    public function getNotOkImage($size = 32)
+    {
+        $src = ilUtil::getImagePath('icon_not_ok.svg');
+        return '<img src="'.$src.'" width="'.$size.'" alt="not_ok" />';
+    }
+
+    /**
+     * Check all inputs
+     */
+    public function checkAll()
+    {
+        $d = $this->data->getAllValues();
+        $all_status = array();
+
+        // step 1
+        $ok = true;
+        $messages = [];
+        if (!($d['cr_schoepfung'] && (($d['cr_erschaffen'] && $d['cr_zustimmung']) || $d['cr_exklusiv']))) {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_cr_berechtigung');
+        }
+        if (!($d['cr_persoenlichkeit'] && $d['cr_einwilligung'] && $d['cr_musik'] && $d['cr_marken'] && $d['cr_kontext']))
+        {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_cr_sonstige_rechte');
+        }
+        $all_status[] = ['status' => $ok, 'messages' => $messages];
+
+        // step 2
+        $ok = true;
+        $messages = [];
+        $license = $this->md_obj->getCCLicense();
+        if (empty($license) || !in_array($license, $this->md_obj->ccMixer($this->data->getIncludedLicenses())))
+        {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_select_license');
+        }
+        $all_status[] = ['status' => $ok, 'messages' => $messages];
+
+        // step 3
+        $ok = true;
+        $messages = [];
+        if (empty($this->parent_obj->getTitle())
+            || empty($this->md_obj->getAuthors()))
+        {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_metadata');
+        }
+        $all_status[] = ['status' => $ok, 'messages' => $messages];
+
+        // step 4
+        $ok = true;
+        $messages = [];
+        if (!($d['ca_lizenz_selbst'] && $d['ca_lizenz_link']&& $d['ca_lizenz_link']))
+        {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_ca_selbst');
+        }
+        $messages = [];
+        if (!($d['ca_urheber'] && $d['ca_miturheber'] && $d['ca_titel'] && $d['ca_lizenz_andere'] && $d['ca_aenderungen']))
+        {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_ca_tullu');
+        }
+        $messages = [];
+        if (!($d['ca_fotos'] && $d['ca_nichtoffen'] && $d['ca_zitat'] && $d['ca_nichtkomm'] && $d['ca_quellen_check'] && $d['ca_quellen_doku']))
+        {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_ca_weitere');
+        }
+        $all_status[] = ['status' => $ok, 'messages' => $messages];
+
+        // step 5
+        $ok = true;
+        $messages = [];
+        if (!($d['cf_konsequenzen'] && $d['cf_bereit']))
+        {
+            $ok = false;
+            $messages[] = $this->plugin->txt('fail_check_final');
+        }
+        $all_status[] = ['status' => $ok, 'messages' => $messages];
+
+        return $all_status;
+    }
 
 	/**
 	* Return to the parent GUI
@@ -286,30 +374,49 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 		$this->ctrl->redirectToURL($_GET['return']);
 	}
 
-
+#region check_rights
 	protected function checkRights()
 	{
 		$form = $this->initRightsCheckForm();
 		$this->output($form->getHTML());
 	}
+
+	protected function saveRights()
+    {
+        if ($this->updateRights())
+        {
+            ilUtil::sendSuccess($this->lng->txt("saved_successfully"), true);
+            $this->ctrl->redirect($this, 'checkRights');
+        }
+    }
+
+    protected function saveRightsAndSelectLicense()
+    {
+        if ($this->updateRights())
+        {
+            $this->ctrl->redirect($this, 'selectLicense');
+        }
+    }
+
 	protected function initRightsCheckForm()
 	{
         $form = new ilPropertyFormGUI();
         $form->setOpenTag(false);
         $form->setCloseTag(false);
         $form->setFormAction($this->ctrl->getFormAction($this));
+        $form->addCommandButton('saveRights', $this->lng->txt('save'));
 
         foreach ($this->data->getParamsBySection('check_rights') as $name => $param)
         {
             $item = $param->getFormItem();
             $form->addItem($item);
         }
-
         return $form;
 	}
-	protected function saveRightsAndSelectLicense()
-	{
-		$form = $this->initRightsCheckForm();
+
+	protected function updateRights()
+    {
+        $form = $this->initRightsCheckForm();
         if ($form->checkInput())
         {
             foreach (array_keys($this->data->getParamsBySection('check_rights')) as $name)
@@ -317,7 +424,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
                 $this->data->set($name, $form->getInput($name));
             }
             $this->data->write();
-            $this->ctrl->redirect($this, 'selectLicense');
+            return true;
         }
         else
         {
@@ -326,12 +433,33 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $form->setValuesByPost();
             $this->output($form->getHTML());
         }
-	}
+    }
 
+
+#endregion
+
+#region select_license
     protected function selectLicense()
     {
         $form = $this->initLicenseSelectForm();
         $this->output($form->getHTML());
+    }
+
+    protected function saveLicense()
+    {
+        if ($this->updateLicense())
+        {
+            ilUtil::sendSuccess($this->lng->txt("saved_successfully"), true);
+            $this->ctrl->redirect($this, 'selectLicense');
+        }
+    }
+
+    protected function saveLicenseAndDescribeMeta()
+    {
+        if ($this->updateLicense())
+        {
+            $this->ctrl->redirect($this, 'describeMeta');
+        }
     }
 
     protected function initLicenseSelectForm()
@@ -414,27 +542,10 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         return $form;
     }
 
-    function saveLicenseAndDescribeMeta()
-    {
-        if ($this->updateLicense())
-        {
-            $this->ctrl->redirect($this, 'describeMeta');
-        }
-    }
-
-    function saveLicense()
-    {
-        if ($this->updateLicense())
-        {
-            ilUtil::sendSuccess($this->lng->txt("saved_successfully"), true);
-            $this->ctrl->redirect($this, 'selectLicense');
-        }
-    }
-
 
     protected function updateLicense()
     {
-        $form = $this->initRightsCheckForm();
+        $form = $this->initLicenseSelectForm();
         if ($form->checkInput())
         {
             foreach (array_keys($this->data->getParamsBySection('select_license')) as $name)
@@ -475,63 +586,38 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $form->setValuesByPost();
             $this->output($form->getHTML());
         }
-
     }
+#endregion
 
 
-    protected function checkAttrib()
-    {
-        $form = $this->initAttribCheckForm();
-        $this->output($form->getHTML());
-    }
-
-    protected function initAttribCheckForm()
-    {
-        $form = new ilPropertyFormGUI();
-        $form->setOpenTag(false);
-        $form->setCloseTag(false);
-        $form->setFormAction($this->ctrl->getFormAction($this));
-        foreach ($this->data->getParamsBySection('check_attrib') as $name => $param)
-        {
-            $item = $param->getFormItem();
-            $form->addItem($item);
-        }
-        return $form;
-    }
-
-    protected function saveAttribAndDeclarePublish()
-    {
-        $form = $this->initAttribCheckForm();
-        if ($form->checkInput())
-        {
-            foreach (array_keys($this->data->getParamsBySection('check_attrib')) as $name)
-            {
-                $this->data->set($name, $form->getInput($name));
-            }
-            $this->data->write();
-            $this->ctrl->redirect($this, 'declarePublish');
-        }
-        else
-        {
-            $this->cmd = 'checkAttrib';
-            $this->step = $this->getStepByCommand($this->cmd);
-            $form->setValuesByPost();
-            $this->output($form->getHTML());
-        }
-    }
-
-
+#region describe_meta
 	protected function describeMeta()
 	{
         $form = $this->initMetaEditForm();
         $this->output($form->getHTML());
 	}
 
+    protected function saveMetaAndCheckAttrib()
+    {
+        if ($this->updateMeta())
+        {
+            $this->ctrl->redirect($this, 'checkAttrib');
+        }
+    }
+
+    protected function saveMeta()
+    {
+        if ($this->updateMeta())
+        {
+            ilUtil::sendSuccess($this->lng->txt("saved_successfully"), true);
+            $this->ctrl->redirect($this, 'describeMeta');
+        }
+    }
 
     /**
      * Init quick edit form.
      */
-    public function initMetaEditForm()
+    protected function initMetaEditForm()
     {
         global $lng, $ilCtrl, $tree;
 
@@ -542,7 +628,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $this->md_section = $this->md_obj->addGeneral();
             $this->md_section->save();
         }
-        $this->form = new ilPropertyFormGUI();
+        $form = new ilPropertyFormGUI();
 
         // title
         $ti = new ilTextInputGUI($this->lng->txt("title"), "gen_title");
@@ -553,7 +639,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $ti->setRequired(true);
         }
         $ti->setValue($this->md_section->getTitle());
-        $this->form->addItem($ti);
+        $form->addItem($ti);
 
         // description(s)
         foreach($ids = $this->md_section->getDescriptionIds() as $id)
@@ -569,7 +655,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
                 $ta->setInfo($this->lng->txt("meta_l_".$md_des->getDescriptionLanguageCode()));
             }
 
-            $this->form->addItem($ta);
+            $form->addItem($ta);
         }
 
         // language(s)
@@ -582,14 +668,14 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $si = new ilSelectInputGUI($this->lng->txt("meta_language"), "gen_language[".$id."][language]");
             $si->setOptions($options);
             $si->setValue($md_lan->getLanguageCode());
-            $this->form->addItem($si);
+            $form->addItem($si);
             $first = false;
         }
         if ($first)
         {
             $si = new ilSelectInputGUI($this->lng->txt("meta_language"), "gen_language[][language]");
             $si->setOptions($options);
-            $this->form->addItem($si);
+            $form->addItem($si);
         }
 
         // keyword(s)
@@ -616,7 +702,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             {
                 $kw->setInfo($this->lng->txt("meta_l_".$lang));
             }
-            $this->form->addItem($kw);
+            $form->addItem($kw);
             asort($keyword_set);
             $kw->setValue($keyword_set);
         }
@@ -628,7 +714,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $kw->setMaxLength(200);
             $kw->setSize(50);
             $kw->setMulti(true);
-            $this->form->addItem($kw);
+            $form->addItem($kw);
         }
 
         // Lifecycle...
@@ -639,7 +725,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         $ta->setCols(50);
         $ta->setRows(2);
         $ta->setValue($this->md_obj->getAuthors());
-        $this->form->addItem($ta);
+        $form->addItem($ta);
 
 
         // typical learning time
@@ -650,14 +736,14 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         {
             $tlt->setValueByLOMDuration($edu->getTypicalLearningTime());
         }
-        $this->form->addItem($tlt);
+        $form->addItem($tlt);
 
 
-        $this->form->setTitle($this->lng->txt("description"));
-        $this->form->setFormAction($ilCtrl->getFormAction($this));
-        $this->form->addCommandButton('saveMeta', $this->lng->txt('save'));
+        $form->setTitle($this->lng->txt("description"));
+        $form->setFormAction($ilCtrl->getFormAction($this));
+        $form->addCommandButton('saveMeta', $this->lng->txt('save'));
 
-        return $this->form;
+        return $form;
     }
 
     /**
@@ -666,10 +752,8 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
      * @param
      * @return
      */
-    function keywordAutocomplete()
+    protected function keywordAutocomplete()
     {
-
-        include_once("./Services/MetaData/classes/class.ilMDKeyword.php");
         $res = ilMDKeyword::_getMatchingKeywords(ilUtil::stripSlashes($_GET["term"]),
             $this->md_obj->getObjType(), $this->md_obj->getRBACId());
 
@@ -687,50 +771,16 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $result[] = $entry;
         }
 
-        include_once './Services/JSON/classes/class.ilJsonUtil.php';
         echo ilJsonUtil::encode($result);
         exit;
     }
 
-
-    function saveMetaAndCheckAttrib()
-	{
-		if ($this->updateMeta())
-		{
-            $this->ctrl->redirect($this, 'checkAttrib');
-		}
-	}
-
-	function saveMeta()
-	{
-		if ($this->updateMeta())
-		{
-            ilUtil::sendSuccess($this->lng->txt("saved_successfully"), true);
-            $this->ctrl->redirect($this, 'describeMeta');
-		}
-	}
-
     /**
      * update quick edit properties
      */
-    function updateMeta()
+    protected function updateMeta()
     {
         $this->md_settings = ilMDSettings::_getInstance();
-
-        if(!trim($_POST['gen_title']))
-        {
-            if($this->md_obj->getObjType() != 'sess')
-            {
-                ilUtil::sendFailure($this->lng->txt('title_required'));
-                $this->cmd = 'describeMeta';
-                $this->step = $this->getStepByCommand($this->cmd);
-                $form = $this->initAttribCheckForm();
-                $form->checkInput();
-                $form->setValuesByPost();
-                $this->output($form->getHTML());
-                return false;
-            }
-        }
 
         // General values
         $this->md_section = $this->md_obj->getGeneral();
@@ -912,14 +962,14 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
     }
 
     // Observer methods
-    function addObserver(&$a_class,$a_method,$a_element)
+    protected function addObserver(&$a_class,$a_method,$a_element)
     {
         $this->observers[$a_element]['class'] =& $a_class;
         $this->observers[$a_element]['method'] =& $a_method;
 
         return true;
     }
-    function callListeners($a_element)
+    protected function callListeners($a_element)
     {
         if(isset($this->observers[$a_element]))
         {
@@ -931,19 +981,25 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         return false;
     }
 
-    protected function declarePublish()
+#endregion
+
+#region check_attrib
+
+    protected function checkAttrib()
     {
-        $form = $this->initPublishForm();
+        $form = $this->initAttribCheckForm();
         $this->output($form->getHTML());
     }
 
-    protected function initPublishForm()
+    protected function initAttribCheckForm()
     {
         $form = new ilPropertyFormGUI();
         $form->setOpenTag(false);
         $form->setCloseTag(false);
         $form->setFormAction($this->ctrl->getFormAction($this));
-        foreach ($this->data->getParamsBySection('check_final') as $name => $param)
+        $form->addCommandButton('saveAttrib', $this->lng->txt('save'));
+
+        foreach ($this->data->getParamsBySection('check_attrib') as $name => $param)
         {
             $item = $param->getFormItem();
             $form->addItem($item);
@@ -951,27 +1007,64 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         return $form;
     }
 
-    protected function saveAndPublish()
+    protected function saveAttrib()
     {
-        $form = $this->initPublishForm();
-        $ok = true;
+        if ($this->updateAttrib())
+        {
+            ilUtil::sendSuccess($this->lng->txt("saved_successfully"), true);
+            $this->ctrl->redirect($this, 'checkAttrib');
+        }
+    }
 
+    protected function saveAttribAndDeclarePublish()
+    {
+        if ($this->updateAttrib())
+        {
+            $this->ctrl->redirect($this, 'declarePublish');
+        }
+    }
+
+    protected function updateAttrib()
+    {
+        $form = $this->initAttribCheckForm();
         if ($form->checkInput())
         {
-            foreach (array_keys($this->data->getParamsBySection('check_final')) as $name)
+            foreach (array_keys($this->data->getParamsBySection('check_attrib')) as $name)
             {
                 $this->data->set($name, $form->getInput($name));
             }
             $this->data->write();
+            return true;
         }
         else
         {
-            $ok = false;
+            $this->cmd = 'checkAttrib';
+            $this->step = $this->getStepByCommand($this->cmd);
+            $form->setValuesByPost();
+            $this->output($form->getHTML());
         }
+    }
 
-        // todo check other things
+#endregion
+#region declare_publish
+    protected function declarePublish()
+    {
+        $form = $this->initPublishForm();
+        $this->output($form->getHTML());
+    }
 
-        if ($ok)
+    protected function savePublish()
+    {
+        if ($this->updatePublish())
+        {
+            ilUtil::sendSuccess($this->lng->txt("saved_successfully"), true);
+            $this->ctrl->redirect($this, 'declarePublish');
+        }
+    }
+
+    protected function saveAndPublish()
+    {
+        if ($this->updatePublish())
         {
             if (!$this->md_obj->createPublicRefId($this->parent_obj))
             {
@@ -988,105 +1081,46 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 
             $this->returnToParent();
         }
+    }
+
+    protected function initPublishForm()
+    {
+        $form = new ilPropertyFormGUI();
+        $form->setOpenTag(false);
+        $form->setCloseTag(false);
+        $form->setFormAction($this->ctrl->getFormAction($this));
+        $form->addCommandButton('savePublish', $this->lng->txt('save'));
+        foreach ($this->data->getParamsBySection('check_final') as $name => $param)
+        {
+            $item = $param->getFormItem();
+            $form->addItem($item);
+        }
+        return $form;
+    }
+
+    protected function updatePublish()
+    {
+        $form = $this->initPublishForm();
+
+        if ($form->checkInput())
+        {
+            foreach (array_keys($this->data->getParamsBySection('check_final')) as $name)
+            {
+                $this->data->set($name, $form->getInput($name));
+            }
+            $this->data->write();
+            return true;
+        }
         else
         {
             $this->cmd = 'declarePublish';
             $this->step = $this->getStepByCommand($this->cmd);
             $form->setValuesByPost();
             $this->output($form->getHTML());
+
         }
     }
 
-    public function getOkImage($size = 32)
-    {
-        $src = ilUtil::getImagePath('icon_ok.svg');
-        return '<img src="'.$src.'" width="'.$size.'" alt="ok" />';
-    }
-
-    public function getNotOkImage($size = 32)
-    {
-        $src = ilUtil::getImagePath('icon_not_ok.svg');
-        return '<img src="'.$src.'" width="'.$size.'" alt="not_ok" />';
-    }
-
-
-    /**
-     * Check all inputs
-     */
-    public function checkAll()
-    {
-        $d = $this->data->getAllValues();
-        $all_status = array();
-
-        // step 1
-        $ok = true;
-        $messages = [];
-        if (!($d['cr_schoepfung'] && (($d['cr_erschaffen'] && $d['cr_zustimmung']) || $d['cr_exklusiv']))) {
-            $ok = false;
-            $messages[] = $this->plugin->txt('fail_cr_berechtigung');
-        }
-        if (!($d['cr_persoenlichkeit'] && $d['cr_einwilligung'] && $d['cr_musik'] && $d['cr_marken'] && $d['cr_kontext']))
-        {
-            $ok = false;
-            $messages[] = $this->plugin->txt('fail_cr_sonstige_rechte');
-        }
-        $all_status[] = ['status' => $ok, 'messages' => $messages];
-
-        // step 2
-        $ok = true;
-        $messages = [];
-        $license = $this->md_obj->getCCLicense();
-        if (empty($license) || !in_array($license, $this->md_obj->ccMixer($this->data->getIncludedLicenses())))
-        {
-            $ok = false;
-            $messages[] = $this->plugin->txt('fail_select_license');
-        }
-        $all_status[] = ['status' => $ok, 'messages' => $messages];
-
-        // step 3
-        $ok = true;
-        $messages = [];
-        if (empty($this->parent_obj->getTitle())
-            || empty($this->md_obj->getAuthors()))
-        {
-            $ok = false;
-            $messages[] = $this->plugin->txt('fail_metadata');
-        }
-        $all_status[] = ['status' => $ok, 'messages' => $messages];
-
-        // step 4
-        $ok = true;
-        $messages = [];
-        if (!($d['ca_lizenz_selbst'] && $d['ca_lizenz_link']&& $d['ca_lizenz_link']))
-        {
-            $ok = false;
-            $messages[] = $this->plugin->txt('fail_ca_selbst');
-        }
-        $messages = [];
-        if (!($d['ca_urheber'] && $d['ca_miturheber'] && $d['ca_titel'] && $d['ca_lizenz_andere'] && $d['ca_aenderungen']))
-        {
-            $ok = false;
-            $messages[] = $this->plugin->txt('fail_ca_tullu');
-        }
-        $messages = [];
-        if (!($d['ca_fotos'] && $d['ca_nichtoffen'] && $d['ca_zitat'] && $d['ca_nichtkomm'] && $d['ca_quellen_check'] && $d['ca_quellen_doku']))
-        {
-            $ok = false;
-            $messages[] = $this->plugin->txt('fail_ca_weitere');
-        }
-        $all_status[] = ['status' => $ok, 'messages' => $messages];
-
-        // step 5
-        $ok = true;
-        $messages = [];
-        if (!($d['cf_konsequenzen'] && $d['cf_bereit']))
-        {
-            $ok = false;
-            $messages[] = $this->plugin->txt('fail_check_final');
-        }
-        $all_status[] = ['status' => $ok, 'messages' => $messages];
-
-        return $all_status;
-    }
+#endregion
 }
 ?>

@@ -14,7 +14,7 @@ class ilOERinFormHelp
 
     /** @var string[] is for connecting the help wiki pages */
     protected $help_ids = [
-      'oer_publishing', 'oer_test'
+      'oer_publishing', 'check_rights', 'select_license', 'describe_meta', 'check_attrib', 'declare_publish'
     ];
 
 

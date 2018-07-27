@@ -142,3 +142,8 @@ help_pages_info#:#Um Hilfe-Seiten aus dem Wiki zu verknüpfen, muss es im Wiki e
 help_page#:#Hilfe-Seite
 help_page_not_found#:#Die Hilfe-Seite wurde leider nicht gefunden!
 help_page_oer_publishing#:#OER veröffentlichen
+help_page_check_rights#:#Prüfung auf Rechte Dritter
+help_page_select_license#:#Festlegung einer Lizenz
+help_page_describe_meta#:#Einordnen und Beschreiben
+help_page_check_attrib#:#Korrekte Lizenzangaben
+help_page_declare_publish#:#Einverständniserklärung und Freigabe
