@@ -25,7 +25,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 	protected $md_obj;
 
 	/**
-	* Currently execured command 
+	* Currently executed command
 	* (set in executeCommand)
 	*/
 	protected $cmd = '';
@@ -35,6 +35,19 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 	* (set in executeCommand)
 	*/
 	protected $step = array();
+
+
+    /**
+     * Status checks of steps
+     * @var array step => ['status' => bool, 'messages' => string[] ]
+     */
+	protected $checks = array();
+
+    /**
+     * Is the object ready for being published?
+     * @var bool
+     */
+	protected $ready = false;
 
 
     /** @var ilOERinFormData */
@@ -164,7 +177,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 	    $ilTabs = $DIC->tabs();
 	    $lng = $DIC->language();
 
-	    $checks = $this->checkAll();
+	    $this->checkAll();
 
 		// show step list and determine the current step number
 		$tpl = $this->plugin->getTemplate("tpl.wizard_steps.html");
@@ -183,7 +196,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 			}
 			$title = $this->plugin->txt($this->steps[$i]['title_var']);
 			$step = sprintf($this->plugin->txt("wizard_step"),$i + 1);
-			if ($checks[$i]['status'])
+			if ($this->checks[$i]['status'])
             {
                 $step = $this->getOkImage(16) . " " .$step;
             }
@@ -221,24 +234,28 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 			$tpl->setVariable("STEP", sprintf($this->plugin->txt("wizard_step"),$stepnum));
 
 			$info = $this->plugin->txt($this->step['desc_var']);
-			if (is_array($checks[$stepindex]['messages']))
+			if (is_array($this->checks[$stepindex]['messages']))
             {
-                foreach ($checks[$stepindex]['messages'] as $message)
+                foreach ($this->checks[$stepindex]['messages'] as $message)
                 {
                     $info .= '<br />'. $this->getNotOkImage(16). " " . $message;
                 }
             }
 			ilUtil::sendInfo($info);
 
-			require_once("./Services/UIComponent/Toolbar/classes/class.ilToolbarGUI.php");
 			$tb = new ilToolbarGUI();
-
 			if ($this->step['next_cmd'] and $stepnum == count($this->steps))
 			{
                 $button = ilSubmitButton::getInstance();
                 $button->setCaption(sprintf($this->plugin->txt('wizard_finish'),$stepnum + 1), false);
                 $button->setCommand($this->step['next_cmd']);
-                $button->setPrimary(true);
+                if ($this->ready) {
+                    $button->setPrimary(true);
+                }
+                else {
+                    $button->setDisabled(true);
+                }
+
                 $tb->addButtonInstance($button);
 			}
 			elseif ($this->step['next_cmd'])
@@ -293,21 +310,24 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
     public function checkAll()
     {
         $d = $this->data->getAllValues();
-        $all_status = array();
+        $this->checks = array();
+        $ready = true;
 
         // step 1
         $ok = true;
         $messages = [];
         if (!($d['cr_schoepfung'] && (($d['cr_erschaffen'] && $d['cr_zustimmung']) || $d['cr_exklusiv']))) {
             $ok = false;
+            $ready = false;
             $messages[] = $this->plugin->txt('fail_cr_berechtigung');
         }
         if (!($d['cr_persoenlichkeit'] && $d['cr_einwilligung'] && $d['cr_musik'] && $d['cr_marken'] && $d['cr_kontext']))
         {
             $ok = false;
+            $ready = false;
             $messages[] = $this->plugin->txt('fail_cr_sonstige_rechte');
         }
-        $all_status[] = ['status' => $ok, 'messages' => $messages];
+        $this->checks[] = ['status' => $ok, 'messages' => $messages];
 
         // step 2
         $ok = true;
@@ -316,9 +336,10 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         if (empty($license) || !in_array($license, $this->md_obj->ccMixer($this->data->getIncludedLicenses())))
         {
             $ok = false;
+            $ready = false;
             $messages[] = $this->plugin->txt('fail_select_license');
         }
-        $all_status[] = ['status' => $ok, 'messages' => $messages];
+        $this->checks[] = ['status' => $ok, 'messages' => $messages];
 
         // step 3
         $ok = true;
@@ -327,9 +348,10 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             || empty($this->md_obj->getAuthors()))
         {
             $ok = false;
+            $ready = false;
             $messages[] = $this->plugin->txt('fail_metadata');
         }
-        $all_status[] = ['status' => $ok, 'messages' => $messages];
+        $this->checks[] = ['status' => $ok, 'messages' => $messages];
 
         // step 4
         $ok = true;
@@ -337,21 +359,22 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         if (!($d['ca_lizenz_selbst'] && $d['ca_lizenz_link']&& $d['ca_lizenz_link']))
         {
             $ok = false;
+            $ready = false;
             $messages[] = $this->plugin->txt('fail_ca_selbst');
         }
-        $messages = [];
         if (!($d['ca_urheber'] && $d['ca_miturheber'] && $d['ca_titel'] && $d['ca_lizenz_andere'] && $d['ca_aenderungen']))
         {
             $ok = false;
+            $ready = false;
             $messages[] = $this->plugin->txt('fail_ca_tullu');
         }
-        $messages = [];
         if (!($d['ca_fotos'] && $d['ca_nichtoffen'] && $d['ca_zitat'] && $d['ca_nichtkomm'] && $d['ca_quellen_check'] && $d['ca_quellen_doku']))
         {
             $ok = false;
+            $ready = false;
             $messages[] = $this->plugin->txt('fail_ca_weitere');
         }
-        $all_status[] = ['status' => $ok, 'messages' => $messages];
+        $this->checks[] = ['status' => $ok, 'messages' => $messages];
 
         // step 5
         $ok = true;
@@ -359,11 +382,11 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         if (!($d['cf_konsequenzen'] && $d['cf_bereit']))
         {
             $ok = false;
+            $ready = false;
             $messages[] = $this->plugin->txt('fail_check_final');
         }
-        $all_status[] = ['status' => $ok, 'messages' => $messages];
-
-        return $all_status;
+        $this->checks[] = ['status' => $ok, 'messages' => $messages];
+        $this->ready = $ready;
     }
 
 	/**
@@ -827,37 +850,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         }
         $this->callListeners('General');
 
-        // Copyright
-        //if($_POST['copyright_id'] or $_POST['rights_copyright'])
-        if($_POST['copyright']['sel'] || $_POST['copyright']['ta'])
-        {
-            if(!is_object($this->md_section = $this->md_obj->getRights()))
-            {
-                $this->md_section = $this->md_obj->addRights();
-                $this->md_section->save();
-            }
-            if($_POST['copyright']['sel'])
-            {
-                $this->md_section->setCopyrightAndOtherRestrictions("Yes");
-                $this->md_section->setDescription('il_copyright_entry__'.IL_INST_ID.'__'.(int) $_POST['copyright']['sel']);
-            }
-            else
-            {
-                $this->md_section->setCopyrightAndOtherRestrictions("Yes");
-                $this->md_section->setDescription(ilUtil::stripSlashes($_POST['copyright']['ta']));
-            }
-            $this->md_section->update();
-        }
-        else
-        {
-            if(is_object($this->md_section = $this->md_obj->getRights()))
-            {
-                $this->md_section->setCopyrightAndOtherRestrictions("No");
-                $this->md_section->setDescription("");
-                $this->md_section->update();
-            }
-        }
-        $this->callListeners('Rights');
 
         //Educational...
         // Typical Learning Time
@@ -1120,6 +1112,9 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 
         }
     }
+
+
+
 
 #endregion
 }

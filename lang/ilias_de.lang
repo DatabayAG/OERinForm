@@ -41,7 +41,7 @@ check_attrib_desc#:#Überprüfen Sie die richtige Auszeichnung des Materials
 describe_meta#:#Einordnen und Beschreiben
 describe_meta_desc#:#Vergeben Sie die wichtigsten Zusatzangaben, damit Ihr Inhalt mit entsprechenden Suchfiltern gefunden wird
 declare_publish#:#Einverständniserklärung und Freigabe
-declare_publish_desc#:#Mit der folgenden Einverständniserklärung geben Sie den Inhalt als OER frei. Er wird im öffentlichen Bereich sichtbar und seine Metadaten werden für OER-Verzeichnisse ausgegeben.
+declare_publish_desc#:#Zur Veröffentlichung müssen Sie noch Ihre Einverständniserklärung speichen. Sind alle Prüfungen erfolgt und die Voraussetzungen erfüllt, können Sie den Inhalt als OER freigeben. Er wird im öffentlichen Bereich sichtbar und seine Metadaten werden für OER-Verzeichnisse ausgegeben.
 cr_berechtigung#:#Urheber oder Rechteinhaber
 cr_schoepfung#:#Geistige Schöpfung
 cr_erschaffen#:#Selbst erschaffen
