@@ -1,4 +1,4 @@
-OERinForm plugin for ILIAS
+OERinForm plugin für ILIAS
 ==========================
 
 Copyright (c) 2018 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
