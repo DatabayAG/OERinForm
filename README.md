@@ -16,16 +16,20 @@ In einem Assistenten wird ein Autor bis zur Veröffentlichung geleitet:
 Als Ergebnis ist der Inhalt in einer öffentlichen Kategorie verknüpft und seine Metadaten sind im Format
 zur Indizierung durch einen Publikationsserver für den OAI (Open Archives Initiative) exportiert.
 
-Die Checkliste im Assistenten des Plugis basiert auf:
-OER & Recht Checkliste Teil 1, OERinForm/Anna Wiggeringloh, http://oer.amh-ev.de/, CC BY-SA 4.0,
-https://creativecommons.org/licenses/by-sa/4.0/deed.de
-
 Zusätzlich kann ein Hilfe-Wiki importiert und in der Plugin-Konfiguration ausgewählt werden:
 https://www.demo.odl.org/goto.php?target=file_205_download&client_id=Demo
 
 
 Dieses Plugin wurde im Rahmen des BMBF-geförderten Projekts OERinForm entwickelt. Weitere Materialien finden Sie unter:
 https://oer.amh-ev.de/
+
+Die Checkliste im Assistenten des Plugis basiert auf:
+OER & Recht Checkliste Teil 1, OERinForm/Anna Wiggeringloh, http://oer.amh-ev.de/, CC BY-SA 4.0,
+https://creativecommons.org/licenses/by-sa/4.0/deed.de
+
+Die Lizenzauswahl im Assistenten ist eine PHP-Portierung des CCMixer von edu-sharing:
+http://ccmixer.edu-sharing.org/
+
 
 Aufgrund der verwendeten rechtlichen Begiffe ist das Plugin bislang nur auf Deutsch verfügbar.
 
