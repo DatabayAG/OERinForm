@@ -81,4 +81,4 @@ Zur Veröffentlichung müssen Sie einen OAI-Server installieren, der diese Metad
 Eine Möglichkeit ist die Java/Tomcat-basierte Software jOAI:
 https://github.com/NCAR/joai-project
 
-Die Adresse Ihres jOAI-Servers müssen Sie dann bei OER-Portalen bekanntgeben, do dass diese von Ihrem Server die Metadaten der veröffentlichten Inhalte abfragen.
+Die Adresse Ihres jOAI-Servers müssen Sie dann bei OER-Portalen bekanntgeben, so dass diese von Ihrem Server die Metadaten der veröffentlichten Inhalte abfragen.
