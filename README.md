@@ -65,7 +65,7 @@ Verwendung
 
 Auf den Export-Reiter von Objekten, die als OER in Frage kommen (z.B. Dateien, Lernmodule, Glossare) wird der Status der Veröffentlichung angezeigt.
 Über den Button "Veröffentlichen" startet ein Assistent, der Sie in fünf Schritten durch die notwendigen Prüfungen und Eingaben leitet. Wurden alle notwendigen
-Prüfpunkte von Ihnen bestätigt, können Sie den Inhalt freigeben. Das Objekt wird dann in der öfentlichen Kategorie verlinkt und es werden seine Metadaten zur Indizierung
+Prüfpunkte von Ihnen bestätigt, können Sie den Inhalt freigeben. Das Objekt wird dann in der öffentlichen Kategorie verlinkt und es werden seine Metadaten zur Indizierung
 durch einen OAI-Server exportiert.
 
 OAI-Export
