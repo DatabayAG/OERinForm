@@ -115,7 +115,6 @@ class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
 		/** @var ilLocatorGUI $ilLocator */
 		$ilLocator = $DIC['ilLocator'];
 
-		require_once('Services/Link/classes/class.ilLink.php');
 		$ilLocator->addRepositoryItems($this->parent_obj->getRefId());
 		$ilLocator->addItem($this->parent_obj->getTitle(), ilLink::_getLink($this->parent_ref_id, $this->parent_type));
 
@@ -150,8 +149,29 @@ class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
 
         $tpl = $this->plugin->getTemplate('tpl.publish_status.html');
         $tpl->setVariable('HEADER', $this->plugin->txt('publish_oer'));
-        $tpl->setVariable('BODY', $this->md_obj->getPublishInfo());
+        $tpl->setVariable('STATUS', $this->md_obj->getPublishInfo());
         $tpl->setVariable('HELP', $this->plugin->getHelpGUI()->getHelpButton('oer_publishing'));
+
+        if ($this->md_obj->getPublishStatus() == ilOERinFormPublishMD::STATUS_PUBLIC)
+        {
+            $keywords = $this->md_obj->getKeywords();
+            if (!empty($keywords)) {
+                $tpl->setVariable('LABEL_KEYWORDS', $this->plugin->txt('label_keywords'));
+                $tpl->setVariable('KEYWORDS', $keywords);
+            }
+
+            $authors = $this->md_obj->getAuthors();
+            if (!empty($keywords)) {
+                $tpl->setVariable('LABEL_AUTHORS', $this->plugin->txt('label_authors'));
+                $tpl->setVariable('AUTHORS', $authors);
+            }
+
+            $copyright = $this->md_obj->getCopyrightDescription();
+            if (!empty($copyright)) {
+                $tpl->setVariable('LICENSE', $copyright);
+            }
+
+        }
 
         $this->ctrl->setParameter($this, 'return', urlencode($_SERVER['SCRIPT_NAME'].'?'.$_SERVER['QUERY_STRING']));
 

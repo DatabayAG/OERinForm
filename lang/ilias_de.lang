@@ -147,3 +147,5 @@ help_page_select_license#:#Festlegung einer Lizenz
 help_page_describe_meta#:#Einordnen und Beschreiben
 help_page_check_attrib#:#Korrekte Lizenzangaben
 help_page_declare_publish#:#Einverständniserklärung und Freigabe
+label_keywords#:#Stichworte:
+label_authors#:#Autor(en):

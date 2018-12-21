@@ -33,6 +33,11 @@ class ilOERinFormPublishMD extends ilMD
     /** @var  ilOERinFormPlugin $plugin */
     protected $plugin;
 
+    /** @var ilMDGeneral */
+    protected $secGeneral;
+
+    /** @var ilMDLifecycle */
+    protected $secLifecycle;
 
     /**
      * Inject the plugin object
@@ -42,29 +47,6 @@ class ilOERinFormPublishMD extends ilMD
     public function setPlugin($a_plugin)
     {
         $this->plugin = $a_plugin;
-    }
-
-    public function getAuthors()
-    {
-        $this->md_settings = ilMDSettings::_getInstance();
-        if(is_object($this->md_section = $this->getLifecycle()))
-        {
-            $sep = $ent_str = "";
-            foreach(($ids = $this->md_section->getContributeIds()) as $con_id)
-            {
-                $md_con = $this->md_section->getContribute($con_id);
-                if ($md_con->getRole() == "Author")
-                {
-                    foreach($ent_ids = $md_con->getEntityIds() as $ent_id)
-                    {
-                        $md_ent = $md_con->getEntity($ent_id);
-                        $ent_str = $ent_str.$sep.$md_ent->getEntity();
-                        $sep = $this->md_settings->getDelimiter()." ";
-                    }
-                }
-            }
-            return $ent_str;
-        }
     }
 
     /**
@@ -156,7 +138,9 @@ class ilOERinFormPublishMD extends ilMD
      */
     public function getPublishFile($format)
     {
-        return $this->getPublishPath($format) . '/ILIAS-' . sprintf('%09d', $this->getRBACId()) . '-' . $format . '.xml';
+        return $this->getPublishPath($format) . '/ILIAS-'
+            . sprintf('%09d', IL_INST_ID) . '-'
+            . sprintf('%09d', $this->getRBACId()) . '-' . $format . '.xml';
     }
 
 
@@ -218,6 +202,100 @@ class ilOERinFormPublishMD extends ilMD
         }
     }
 
+    /**
+     * Get an instanciated general section
+     * @return ilMDGeneral
+     */
+    public function getSectionGeneral()
+    {
+        if (!isset($this->secGeneral))
+        {
+            $this->secGeneral = $this->getGeneral();
+            if (!is_object(($this->secGeneral)))
+            {
+                $this->secGeneral = $this->addGeneral();
+            }
+        }
+        return $this->secGeneral;
+    }
+
+    /**
+     * Get an instanciated lifecycle section
+     * @return ilMDLifecycle
+     */
+    public function getSectionLifecycle()
+    {
+        if (!isset($this->secLifecycle))
+        {
+            $this->secLifecycle = $this->getLifecycle();
+            if (!is_object(($this->secLifecycle))) {
+                $this->secLifecycle = $this->addLifecycle();
+            }
+        }
+        return $this->secLifecycle;
+    }
+
+    /**
+     * Get a comma separated list of keywords
+     * @return string
+     */
+    public function getKeywords()
+    {
+        /** @var ilMDSettings $settings */
+        $settings = ilMDSettings::_getInstance();
+        if ($md_gen = $this->getSectionGeneral())
+        {
+            $keywords = array();
+            foreach($ids = $md_gen->getKeywordIds() as $id)
+            {
+                $md_key = $md_gen->getKeyword($id);
+                $keywords[] = $md_key->getKeyword();
+            }
+            return implode($keywords, $settings->getDelimiter() . ' ');
+        }
+        return '';
+    }
+
+    /**
+     * Get a comma separated list of authors
+     * @return string
+     */
+    public function getAuthors()
+    {
+        $settings = ilMDSettings::_getInstance();
+        if (is_object($lifecycle = $this->getSectionLifecycle()))
+        {
+            $sep = $author = "";
+            foreach(($ids = $lifecycle->getContributeIds()) as $con_id)
+            {
+                $md_con = $lifecycle->getContribute($con_id);
+                if ($md_con->getRole() == "Author")
+                {
+                    foreach($ent_ids = $md_con->getEntityIds() as $ent_id)
+                    {
+                        $md_ent = $md_con->getEntity($ent_id);
+                        $author = $author.$sep.$md_ent->getEntity();
+                        $sep = $settings->getDelimiter() . ' ';
+                    }
+                }
+            }
+            return $author;
+        }
+        return '';
+    }
+
+    /**
+     * Get the Copyright description
+     */
+    public function getCopyrightDescription()
+    {
+        $copyright = "";
+        if(is_object($rights = $this->getRights()))
+        {
+            $copyright = ilMDUtils::_parseCopyright($rights->getDescription());
+        }
+        return $copyright;
+    }
 
     /**
      * Publish the object
