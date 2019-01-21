@@ -31,7 +31,7 @@ Die Lizenzauswahl im Assistenten ist eine PHP-Portierung des CCMixer von edu-sha
 http://ccmixer.edu-sharing.org/
 
 
-Aufgrund der verwendeten rechtlichen Begiffe ist das Plugin bislang nur auf Deutsch verfügbar.
+Aufgrund der verwendeten Begiffe ist das Plugin bislang nur auf Deutsch verfügbar.
 
 Installation
 ------------
