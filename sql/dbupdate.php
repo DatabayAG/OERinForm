@@ -13,7 +13,7 @@
 ?>
 <#2>
 <?php
-if (!$ilDB->tableExists('oerinform_config'))
+if (!$ilDB->tableExists('oerinf_config'))
 {
     $fields = array(
         'param_name' => array(
@@ -34,7 +34,7 @@ if (!$ilDB->tableExists('oerinform_config'))
 ?>
 <#3>
 <?php
-if (!$ilDB->tableExists('oerinform_data'))
+if (!$ilDB->tableExists('oerinf_data'))
 {
     $fields = array(
         'obj_id' => array(
