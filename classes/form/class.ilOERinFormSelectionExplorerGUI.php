@@ -41,4 +41,9 @@ class ilOERinFormSelectionExplorerGUI extends ilRepositoryExplorerGUI
         }
         return true;
     }
+
+    public function getNodeHref($a_node)
+	{
+		return '';
+	}
 }
