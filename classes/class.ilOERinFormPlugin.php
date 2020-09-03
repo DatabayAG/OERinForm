@@ -79,7 +79,7 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
      */
     public function isAllowedType($type)
     {
-        return in_array($type, array('file','lm','htlm','sahs','glo','wiki'));
+        return in_array($type, array('file','lm','htlm','sahs','glo','wiki', 'tst', 'qpl'));
     }
 
 
