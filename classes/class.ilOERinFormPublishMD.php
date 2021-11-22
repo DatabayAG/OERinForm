@@ -384,17 +384,17 @@ class ilOERinFormPublishMD extends ilMD
 
             if (strpos($description, 'creativecommons.org/licenses/zero/')) {
                 $map[self::CC0] = $id;
-            } elseif (strpos($description, 'creativecommons.org/licenses/by/')) {
+            } elseif (strpos($description, 'creativecommons.org/licenses/by/4.0')) {
                 $map[self::CC_BY] = $id;
-            } elseif (strpos($description, 'creativecommons.org/licenses/by-sa/')) {
+            } elseif (strpos($description, 'creativecommons.org/licenses/by-sa/4.0')) {
                 $map[self::CC_BY_SA] = $id;
-            } elseif (strpos($description, 'creativecommons.org/licenses/by-nd/')) {
+            } elseif (strpos($description, 'creativecommons.org/licenses/by-nd/4.0')) {
                 $map[self::CC_BY_ND] = $id;
-            } elseif (strpos($description, 'creativecommons.org/licenses/by-nc/')) {
+            } elseif (strpos($description, 'creativecommons.org/licenses/by-nc/4.0')) {
                 $map[self::CC_BY_NC] = $id;
-            } elseif (strpos($description, 'creativecommons.org/licenses/by-nc-nd/')) {
+            } elseif (strpos($description, 'creativecommons.org/licenses/by-nc-nd/4.0')) {
                 $map[self::CC_BY_NC_ND] = $id;
-            } elseif (strpos($description, 'creativecommons.org/licenses/by-nc-sa/')) {
+            } elseif (strpos($description, 'creativecommons.org/licenses/by-nc-sa/4.0')) {
                 $map[self::CC_BY_NC_SA] = $id;
             }
         }
