@@ -4,7 +4,7 @@
 /**
  * vhb Shibboleth Authentication configuration user interface class
  *
- * @ilCtrl_Calls: ilOERinFormConfigGUI: ilPropertyFormGUI
+ * @ilCtrl_Calls ilOERinFormConfigGUI: ilPropertyFormGUI
  *
  * @author Fred Neumann <fred.neumann@fau.de>
  */
