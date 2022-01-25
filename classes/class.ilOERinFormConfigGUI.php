@@ -120,6 +120,7 @@ class ilOERinFormConfigGUI extends ilPluginConfigGUI
 
         $item = new ilTextInputGUI($this->plugin->txt('pub_ref_id'), 'pub_ref_id');
         $item->setValue($this->config->get('pub_ref_id'));
+        $item->setInfo($this->plugin->txt('pub_ref_id_info'));
 
         $form->addItem($item);
 		$form->addCommandButton("saveBasicSettings", $this->lng->txt("save"));
@@ -135,14 +136,13 @@ class ilOERinFormConfigGUI extends ilPluginConfigGUI
         $form = new ilPropertyFormGUI();
         $form->setTitle($this->plugin->txt('help_configuration'));
         $form->setFormAction( $this->ctrl->getFormAction($this));
-        $this->ctrl->setParameterByClass('ilOERinFormRepositorySelectInputGUI', 'config', 'help');
+        $this->ctrl->setParameterByClass('ilTextInputGUI', 'config', 'help');
 
-        $item = new ilOERinFormRepositorySelectInputGUI($this->plugin->txt('wiki_ref_id'), 'wiki_ref_id');
-        $item->setSelectableTypes(['wiki']);
-        $item->setInfo($this->plugin->txt('wiki_ref_id_info'));
+        $item = new ilTextInputGUI($this->plugin->txt('wiki_ref_id'), 'wiki_ref_id');
         $item->setValue($this->config->get('wiki_ref_id'));
-        $form->addItem($item);
+        $item->setInfo($this->plugin->txt('wiki_ref_id_info'));
 
+        $form->addItem($item);
         $form->addCommandButton("saveHelpSettings", $this->lng->txt("save"));
         return $form;
     }
