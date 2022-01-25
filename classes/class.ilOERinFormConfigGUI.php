@@ -116,14 +116,12 @@ class ilOERinFormConfigGUI extends ilPluginConfigGUI
 		$form = new ilPropertyFormGUI();
         $form->setTitle($this->plugin->txt('basic_configuration'));
 		$form->setFormAction($this->ctrl->getFormAction($this));
-		$this->ctrl->setParameterByClass('ilOERinFormRepositorySelectInputGUI', 'config', 'basic');
+		$this->ctrl->setParameterByClass('ilTextInputGUI', 'config', 'basic');
 
-        $item = new ilOERinFormRepositorySelectInputGUI($this->plugin->txt('pub_ref_id'), 'pub_ref_id');
-        $item->setSelectableTypes(['cat']);
-        $item->setInfo($this->plugin->txt('pub_ref_id_info'));
+        $item = new ilTextInputGUI($this->plugin->txt('pub_ref_id'), 'pub_ref_id');
         $item->setValue($this->config->get('pub_ref_id'));
-        $form->addItem($item);
 
+        $form->addItem($item);
 		$form->addCommandButton("saveBasicSettings", $this->lng->txt("save"));
 		return $form;
 	}
