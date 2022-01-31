@@ -118,7 +118,7 @@ class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
 		$ilLocator->addRepositoryItems($this->parent_obj->getRefId());
 		$ilLocator->addItem($this->parent_obj->getTitle(), ilLink::_getLink($this->parent_ref_id, $this->parent_type));
 
-		$this->tpl->getStandardTemplate();
+		$this->tpl->loadStandardTemplate(); // see https://github.com/ILIAS-eLearning/ILIAS/commit/0c199948c24dc454f36d6dc3fca3765dfa39e5a4#diff-cf5e03a4e2f5e094186a3fd00fa7187d6bcf86b16c8b0907ba923bd8dfdd37fe
 		$this->tpl->setLocator();
 		$this->tpl->setTitle($this->parent_obj->getPresentationTitle());
 		$this->tpl->setDescription($this->parent_obj->getLongDescription());
