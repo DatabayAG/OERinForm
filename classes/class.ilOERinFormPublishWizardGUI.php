@@ -279,7 +279,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 		$ilTabs->setBackTarget($lng->txt('export'), $_GET['return']);
 
 		$this->tpl->setContent($tpl->get());
-		$this->tpl->show();
+		$this->tpl->printToStdout(); // see https://github.com/ILIAS-eLearning/ILIAS/commit/84424ec7abfb0fa61acf3a606754ce654f70ca61#diff-cf5e03a4e2f5e094186a3fd00fa7187d6bcf86b16c8b0907ba923bd8dfdd37fe
 	}
 
     /**
