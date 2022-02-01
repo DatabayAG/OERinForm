@@ -251,7 +251,7 @@ class ilOERinFormPublishMD extends ilMD
                 $md_key = $md_gen->getKeyword($id);
                 $keywords[] = $md_key->getKeyword();
             }
-            return implode($keywords, $settings->getDelimiter() . ' ');
+            return implode($settings->getDelimiter() . ' ', $keywords);
         }
         return '';
     }
