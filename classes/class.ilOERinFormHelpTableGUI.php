@@ -85,7 +85,7 @@ class ilOERinFormHelpTableGUI extends ilTable2GUI {
             {
                 $page = new ilWikiPage($this->help->getPageId($help_id));
                 $row['page_title'] = $page->getTitle();
-                $row['actions'] = $this->plugin->getHelpGUI()->getHelpButton($help_id);
+                //$row['actions'] = $this->plugin->getHelpGUI()->getHelpButton($help_id);
             }
             else
             {

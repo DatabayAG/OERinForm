@@ -150,7 +150,7 @@ class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
         $tpl = $this->plugin->getTemplate('tpl.publish_status.html');
         $tpl->setVariable('HEADER', $this->plugin->txt('publish_oer'));
         $tpl->setVariable('STATUS', $this->md_obj->getPublishInfo());
-        $tpl->setVariable('HELP', $this->plugin->getHelpGUI()->getHelpButton('oer_publishing'));
+       // $tpl->setVariable('HELP', $this->plugin->getHelpGUI()->getHelpButton('oer_publishing'));
 
         if ($this->md_obj->getPublishStatus() == ilOERinFormPublishMD::STATUS_PUBLIC)
         {
