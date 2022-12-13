@@ -216,7 +216,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 		{
 			if ($this->plugin->getHelp()->isPageAvailable($this->step['help_id']))
 			{
-                // $tpl->setVariable('HELP', $this->plugin->getHelpGUI()->getHelpButton($this->step['help_id']));
+                $tpl->setVariable('HELP', $this->plugin->getHelpGUI()->getHelpButton($this->step['help_id']));
 			}
 		}
 		$this->tpl->setRightContent( $tpl->get());

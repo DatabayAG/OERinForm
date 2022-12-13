@@ -50,6 +50,16 @@ class ilOERinFormHelpGUI extends ilOERinFormBaseGUI
         $factory = $DIC->ui()->factory();
         $renderer = $DIC->ui()->renderer();
 
+        if ($ref_id = $this->help->getWikiRefId()) {
+
+            $button = ilLinkButton::getInstance();
+            $button->setCaption($this->lng->txt('help'), false);
+            $button->setUrl(ilLink::_getStaticLink($ref_id));
+            $button->setTarget('_blank');
+
+            return $button->getToolbarHTML();
+        }
+
         if ($this->help->isPageAvailable($help_id))
         {
             $modal = $this->getHelpModal($help_id);

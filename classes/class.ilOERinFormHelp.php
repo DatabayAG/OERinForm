@@ -55,6 +55,7 @@ class ilOERinFormHelp
      */
     public function isPageAvailable($a_help_id)
     {
+        return !empty($this->getWikiRefId());
         return isset($this->page_map[$a_help_id]);
     }
 
