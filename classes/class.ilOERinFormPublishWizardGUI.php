@@ -652,6 +652,8 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $this->md_section->save();
         }
         $form = new ilPropertyFormGUI();
+        $form->setOpenTag(false);
+        $form->setCloseTag(false);
 
         // title
         $ti = new ilTextInputGUI($this->lng->txt("title"), "gen_title");
