@@ -41,16 +41,16 @@ check_attrib_desc#:#Überprüfen Sie die richtige Auszeichnung des Materials
 describe_meta#:#Einordnen und Beschreiben
 describe_meta_desc#:#Vergeben Sie die wichtigsten Zusatzangaben, damit Ihr Inhalt mit entsprechenden Suchfiltern gefunden wird
 declare_publish#:#Einverständniserklärung und Freigabe
-declare_publish_desc#:#Zur Veröffentlichung müssen Sie noch Ihre Einverständniserklärung speichen. Sind alle Prüfungen erfolgt und die Voraussetzungen erfüllt, können Sie den Inhalt als OER freigeben. Er wird im öffentlichen Bereich sichtbar und seine Metadaten werden für OER-Verzeichnisse ausgegeben.
-cr_berechtigung#:#Urheber oder Rechteinhaber
+declare_publish_desc#:#Zur Veröffentlichung müssen Sie noch Ihre Einverständniserklärung speichern. Sind alle Prüfungen erfolgt und die Voraussetzungen erfüllt, können Sie den Inhalt als OER freigeben. Er wird im öffentlichen Bereich sichtbar und seine Metadaten werden für OER-Verzeichnisse ausgegeben.
+cr_berechtigung#:#Urheber*in oder Rechteinhaber*in
 cr_schoepfung#:#Geistige Schöpfung
 cr_erschaffen#:#Selbst erschaffen
-cr_zustimmung#:# Miturheber
+cr_zustimmung#:# Miturheber*innen
 cr_exklusiv#:#Nutzungsrechte
 cr_schoepfung_info#:#Das Material bzw. Werk ist eine geistige Schöpfung i.S.v. § 2 UrhG oder eine Leistung anderer Art  nach § 70 ff. UrhG.
 cr_erschaffen_info#:#Ich habe das Werk erschaffen.
-cr_zustimmung_info#:#Ich habe für die Veröffentlichung die Zustimmung von eventuellen Miturhebern, die an dem Werk einen eigenen schöpferischen Anteil erbracht haben, eingeholt.
-cr_exklusiv_info#:#Ich habe das Werk zwar nicht selbst erschaffen, aber mir wurden von dem Urheber die exklusiven Nutzungsrechte eingeräumt, so dass ich dazu befugt bin, das Werk unter einer offenen Lizenz zu veröffentlichen.
+cr_zustimmung_info#:#Ich habe für die Veröffentlichung die Zustimmung von eventuellen Miturheber*innen, die an dem Werk einen eigenen schöpferischen Anteil erbracht haben, eingeholt.
+cr_exklusiv_info#:#Ich habe das Werk zwar nicht selbst erschaffen, aber mir wurden von dem*der Urheber*in die exklusiven Nutzungsrechte eingeräumt, so dass ich dazu befugt bin, das Werk unter einer offenen Lizenz zu veröffentlichen.
 cr_sonstige_rechte#:#Sonstige Rechte beachten
 cr_persoenlichkeit#:#Perönlichkeitsrecht
 cr_einwilligung#:#Abbildungen
@@ -62,7 +62,7 @@ cr_persoenlichkeit_info#:#Ich habe das allgemeine Persönlichkeitsrecht (Recht a
 cr_einwilligung_info#:#Bei Abbildungen von Personen habe ich mir die Einwilligung der Abgebildeten eingeholt (außer es besteht eine Ausnahme nach §§ 22, 23 KUG).
 cr_musik_info#:#Sofern ich Musik eingeflochten habe, habe ich die Rechte geprüft und gegebenenfalls eine GEMA- Meldung gemacht.
 cr_marken_info#:#Ich habe geprüft, ob an abgebildeten Motiven Markenrechte bestehen.
-cr_kontext_info#:#Ich verwende das Material nicht in einem Kontext, dass den Urheber in einem schlechten Licht darstellt und ihn bzw. seine Aussage „entstellt“ i.S.v. § 14 UrhG.
+cr_kontext_info#:#Ich verwende das Material nicht in einem Kontext, dass den*die Urheber*in in einem schlechten Licht darstellt und ihn*sie bzw. seine*ihre Aussage „entstellt“ i.S.v. § 14 UrhG.
 ca_selbst#:#Lizenzangabe des eigenen Materials
 ca_lizenz_selbst#:#Eigene Lizenz
 ca_lizenz_link#:#Link zum Lizenztext
@@ -71,14 +71,14 @@ ca_lizenz_selbst_info#:#Ich habe die Lizenz (inkl. Versionsnummer) unter mein We
 ca_lizenz_link_info#:#Ich habe einen Link (bei digitalen Produkten genügt ein hinterlegter Hyperlink, ansonsten ausgeschrieben) zum Lizenztext hinzugefügt.
 ca_lizenz_kompat_info#:#Ich habe die Kompatibilität zwischen den verwendeten Lizenzen und meiner vergebenen Lizenz geprüft und halte mich in dem Rahmen der Lizenz.
 ca_tullu#:#TULLU-Regel
-ca_urheber#:#Urheber
-ca_miturheber#:#Miturheber
+ca_urheber#:#Urheber*in
+ca_miturheber#:#Miturheber*in
 ca_titel#:#Titel
 ca_lizenz_andere#:#Lizenz
 ca_aenderungen#:#Änderungen
-ca_tullu_info#:#TULLU ist eine Merkhilfe für die folgenden notwendigen Angaben: Titel, Urheber, Lizenz, Link, [Ursprungsort].
-ca_urheber_info#:#Ich habe den Urheber des verwendeten Materials/der Materialauszüge genannt.
-ca_miturheber_info#:#Sofern existent, habe ich Miturheber ebenfalls als Urheber gekennzeichnet.
+ca_tullu_info#:#TULLU ist eine Merkhilfe für die folgenden notwendigen Angaben: Titel, Urheber*in, Lizenz, Link, [Ursprungsort].
+ca_urheber_info#:#Ich habe den*die Urheber*in des verwendeten Materials/der Materialauszüge genannt.
+ca_miturheber_info#:#Sofern existent, habe ich Miturheber*innen ebenfalls als Urheber*innen gekennzeichnet.
 ca_titel_info#:#Sofern das Werk einen Titel hat, habe ich ihn aufgeführt.
 ca_lizenz_andere_info#:#Ich habe den Link zur CC-Lizenz (bei digitalen Produkten genügt ein hinterlegter Hyperlink, ansonsten ausgeschrieben) zum Lizenztext hinzugefügt.
 ca_aenderungen_info#:#Ich habe die Änderungen, die ich an dem Material vorgenommen habe, gekennzeichnet und ausreichend beschrieben.
@@ -106,18 +106,18 @@ sl_cc_by_nc_nd#:#CC BY-NC-ND
 sl_other#:#Andere
 sl_own_choice#:#Gesamt-Lizenz
 sl_cc0_info#:#Das Werk unterliegt keinerlei Urheberrechtsschutz und kann ohne Einschränkungen genutzt und verändert werden.
-sl_cc_by_info#:#Das Werk kann frei genutzt und verändert werden, sofern die Urheberin oder der Urheber genannt wird.
-sl_cc_by_sa_info#:#Das Werk kann frei genutzt und verändert werden, sofern die Urheberin oder der Urheber genannt wird und das neue Werk unter derselben CC-Lizenz wie das Ursprungswerk veröffentlicht wird.
-sl_cc_by_nd_info#:#Das Werk kann frei genutzt werden, sofern die Urheberin oder der Urheber genannt wird. Es darf jedoch nicht verändert werden.
-sl_cc_by_nc_info#:#Das Werk kann frei genutzt und verändert werden, sofern die Urheberin oder der Urheber genannt wird und das Werk nicht kommerziell genutzt wird.
-sl_cc_by_nc_sa_info#:#Das Werk kann frei genutzt werden, sofern die Urheberin oder der Urheber genannt und das Werk nicht kommerziell genutzt werden, sowie das neue Werk unter derselben CC-Lizenz wie das Ursprungswerk veröffentlicht wird.
-sl_cc_by_nc_nd_info#:#Das Werk kann frei genutzt werden, sofern die Urheberin oder der Urheber genannt und das Werk nicht kommerziell genutzt werden. Es darf jedoch nicht verändert werden.
+sl_cc_by_info#:#Das Werk kann frei genutzt und verändert werden, sofern der*die Urherber*in genannt wird.
+sl_cc_by_sa_info#:#Das Werk kann frei genutzt und verändert werden, sofern der*die Urherber*in genannt wird und das neue Werk unter derselben CC-Lizenz wie das Ursprungswerk veröffentlicht wird.
+sl_cc_by_nd_info#:#Das Werk kann frei genutzt werden, sofern der*die Urherber*in genannt wird. Es darf jedoch nicht verändert werden.
+sl_cc_by_nc_info#:#Das Werk kann frei genutzt und verändert werden, sofern der*die Urherber*in genannt wird und das Werk nicht kommerziell genutzt wird.
+sl_cc_by_nc_sa_info#:#Das Werk kann frei genutzt werden, sofern der*die Urherber*in genannt und das Werk nicht kommerziell genutzt werden, sowie das neue Werk unter derselben CC-Lizenz wie das Ursprungswerk veröffentlicht wird.
+sl_cc_by_nc_nd_info#:#Das Werk kann frei genutzt werden, sofern der*die Urherber*in genannt und das Werk nicht kommerziell genutzt werden. Es darf jedoch nicht verändert werden.
 sl_other_info#:#Das Material einthält auch Werke unter anderen Lizenzen. Für diese müssen Sie selbst prüfen, ob sie mit einer CC-Lizenz vereinbar sind.
 sl_own_choice_info#:#Wählen Sie hier, die Lizenz, unter der Sie das Material veröffentlichen wollen. Die Lizenzen "CC0", "CC BY" und "CC BY-SA" gelten allgemein als OER-konform und werden von CreativeCommons.org als Free Cultural Works anerkannt.
 cf_freigabe#:#Einverständniserklärung und Freigabe
 cf_konsequenzen#:#Bleibende Lizenz
 cf_bereit#:#Veröffentlichung
-cf_konsequenzen_info#:#Ich bin mir im Klaren darüber, dass ich die Lizenz nicht wieder „zurücknehmen“ kann.
+cf_konsequenzen_info#:#Ich habe die Lizenzentscheidung wohlüberlegt getroffen, wissend, dass eine nachträgliche Rücknahme oder Änderung nicht möglich ist.
 cf_bereit_info#:#Ich bin bereit, das Material zu veröffentlichen.
 selected_license#:#Ausgewählte Lizenz
 no_cc_license#:#Keine oder andere Lizenz
