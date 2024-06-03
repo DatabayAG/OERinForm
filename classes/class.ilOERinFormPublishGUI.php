@@ -1,13 +1,9 @@
 <?php
-// Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
-require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/OERinForm/classes/class.ilOERinFormBaseGUI.php');
+// Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
 /**
  * GUI for OER publishing functions
- *
- * @author Fred Neumann <fred.neumann@fau.de>
- * @version $Id$
  *
  * @ilCtrl_IsCalledBy ilOERinFormPublishGUI: ilUIPluginRouterGUI
  * @ilCtrl_Calls ilOERinFormPublishGUI: ilOERinFormPublishWizardGUI
@@ -15,145 +11,118 @@ require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
 class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
 {
 
-	/** @var  int parent object ref_id */
-	protected $parent_ref_id;
+    protected int $parent_ref_id;
+    protected string $parent_type;
+    protected string $parent_gui_class;
+    protected ?ilObject $parent_obj;
+    protected ilOERinFormPublishMD $md_obj;
+    protected ilLocatorGUI $locator;
 
-	/** @var  string parent object type */
-	protected $parent_type;
+    /**
+     * constructor.
+     * todo: remove GET access
+     */
+    public function __construct()
+    {
+        parent::__construct();
 
-	/** @var  string parent gui class */
-	protected $parent_gui_class;
+        global $DIC;
+        $this->locator = $DIC['ilLocator'];
 
-	/** @var  ilObject $parent_obj */
-	protected $parent_obj;
+        $this->parent_ref_id = (int) $_GET['ref_id'];
+        $this->parent_type = ilObject::_lookupType($this->parent_ref_id, true);
+        $this->parent_obj = ilObjectFactory::getInstanceByRefId($this->parent_ref_id);
+        $this->parent_gui_class = ilObjectFactory::getClassByType($this->parent_type) . 'GUI';
 
-	/** @var  ilOERinFormPublishMD $md_obj */
-	protected $md_obj;
-
-	/**
-	 * constructor.
-	 */
-	public function __construct()
-	{
-		parent::__construct();
-
-		$this->ctrl->saveParameter($this, 'ref_id');
-
-		$this->parent_ref_id = $_GET['ref_id'];
-		$this->parent_type = ilObject::_lookupType($this->parent_ref_id, true);
-		$this->parent_obj = ilObjectFactory::getInstanceByRefId($this->parent_ref_id);
-		$this->parent_gui_class = ilObjectFactory::getClassByType($this->parent_type).'GUI';
-
-		$this->plugin->includeClass('class.ilOERinFormPublishMD.php');
-		$this->md_obj = new ilOERinFormPublishMD($this->parent_obj->getId(), $this->parent_obj->getId(), $this->parent_type);
-		$this->md_obj->setPlugin($this->plugin);
+        $this->md_obj = new ilOERinFormPublishMD($this->parent_obj->getId(), $this->parent_obj->getId(), $this->parent_type);
     }
 
 
-	/**
-	* Handles all commands
-	*/
-	public function executeCommand()
-	{
-		$fallback_url = "goto.php?target=".$this->parent_type.'_'.$this->parent_ref_id;
+    /**
+    * Handles all commands
+    */
+    public function executeCommand(): void
+    {
+        $this->ctrl->saveParameter($this, 'ref_id');
 
-		if (!$this->access->checkAccess('write','', $_GET['ref_id']))
-		{
-            ilUtil::sendFailure($this->lng->txt("permission_denied"), true);
-            ilUtil::redirect($fallback_url);
-		}
+        $fallback_url = "goto.php?target=" . $this->parent_type . '_' . $this->parent_ref_id;
 
-		$this->ctrl->saveParameter($this, 'ref_id');
-		$cmd = $this->ctrl->getCmd('showHelp');
+        if (!$this->access->checkAccess('write', '', $_GET['ref_id'])) {
+            $this->tpl->setOnScreenMessage('failure', $this->lng->txt("permission_denied"), true);
+            $this->ctrl->redirectToURL($fallback_url);
+        }
 
-		$next_class = $this->ctrl->getNextClass($this);
+        $this->ctrl->saveParameter($this, 'ref_id');
+        $cmd = $this->ctrl->getCmd('showHelp');
 
-		switch ($next_class)
-		{
-			case 'iloerinformpublishwizardgui':
-				$this->prepareOutput();
-				$this->plugin->includeClass('class.ilOERinFormPublishWizardGUI.php');
-				$pubGUI = new ilOERinFormPublishWizardGUI();
-				$this->ctrl->forwardCommand($pubGUI);
-				break;
+        $next_class = $this->ctrl->getNextClass($this);
 
-			default:
-				switch ($cmd)
-				{
-					case "publish":
-					case "republish":
-					case "unpublish":
-						$this->$cmd();
-						break;
+        switch ($next_class) {
+            case 'iloerinformpublishwizardgui':
+                $this->prepareOutput();
+                $wizard_gui = new ilOERinFormPublishWizardGUI(
+                    $this,
+                    $this->parent_obj
+                );
+                $this->ctrl->forwardCommand($wizard_gui);
+                break;
 
-					default:
-						ilUtil::sendFailure($this->lng->txt("permission_denied"), true);
-						ilUtil::redirect($fallback_url);
-						break;
-				}
-		}
+            default:
+                switch ($cmd) {
+                    case "publish":
+                    case "republish":
+                    case "unpublish":
+                        $this->$cmd();
+                        break;
 
-
-	}
-
-	/**
-	 * Get the plugin object
-	 * @return ilOERinFormPlugin|null
-	 */
-	public function getPlugin()
-	{
-		return $this->plugin;
-	}
+                    default:
+                        $this->tpl->setOnScreenMessage('failure', $this->lng->txt("permission_denied"), true);
+                        $this->ctrl->redirectToURL($fallback_url);
+                        break;
+                }
+        }
+    }
 
     /**
-	 * Prepare the test header, tabs etc.
-	 */
-	protected function prepareOutput()
-	{
-		global $DIC;
+     * Prepare the test header, tabs etc.
+     */
+    protected function prepareOutput(): void
+    {
+        $this->locator->addRepositoryItems($this->parent_obj->getRefId());
+        $this->locator->addItem($this->parent_obj->getTitle(), ilLink::_getLink($this->parent_ref_id, $this->parent_type));
 
-		/** @var ilLocatorGUI $ilLocator */
-		$ilLocator = $DIC['ilLocator'];
-
-		$ilLocator->addRepositoryItems($this->parent_obj->getRefId());
-		$ilLocator->addItem($this->parent_obj->getTitle(), ilLink::_getLink($this->parent_ref_id, $this->parent_type));
-
-		$this->tpl->loadStandardTemplate(); // see https://github.com/ILIAS-eLearning/ILIAS/commit/0c199948c24dc454f36d6dc3fca3765dfa39e5a4#diff-cf5e03a4e2f5e094186a3fd00fa7187d6bcf86b16c8b0907ba923bd8dfdd37fe
-		$this->tpl->setLocator();
-		$this->tpl->setTitle($this->parent_obj->getPresentationTitle());
-		$this->tpl->setDescription($this->parent_obj->getLongDescription());
-		$this->tpl->setTitleIcon(ilObject::_getIcon('', 'big', $this->parent_type), $this->lng->txt('obj_'.$this->parent_type));
-	}
+        // see https://github.com/ILIAS-eLearning/ILIAS/commit/0c199948c24dc454f36d6dc3fca3765dfa39e5a4#diff-cf5e03a4e2f5e094186a3fd00fa7187d6bcf86b16c8b0907ba923bd8dfdd37fe
+        $this->tpl->loadStandardTemplate();
+        $this->tpl->setLocator();
+        $this->tpl->setTitle($this->parent_obj->getPresentationTitle());
+        $this->tpl->setDescription($this->parent_obj->getLongDescription());
+        $this->tpl->setTitleIcon(ilObject::_getIcon('', 'big', $this->parent_type), $this->lng->txt('obj_' . $this->parent_type));
+    }
 
 
-	/**
-	 * Reject the publishing
-	 */
-	public function unpublish()
-	{
-		$this->md_obj->unpublish();
-		ilUtil::sendSuccess($this->plugin->txt('msg_meta_unpublished'), true);
-		$this->ctrl->setParameter($this,'section', $_REQUEST['section']);
-		$this->returnToParent();
-	}
+    /**
+     * Reject the publishing
+     */
+    public function unpublish(): void
+    {
+        $this->md_obj->unpublish();
+        $this->tpl->setOnScreenMessage('success', $this->plugin->txt('msg_meta_unpublished'), true);
+        $this->ctrl->setParameter($this, 'section', $_REQUEST['section']);
+        $this->returnToParent();
+    }
 
 
     /**
      * Add the publishing info to the page
      */
-	public function addPublishInfo()
+    public function addPublishInfo(): void
     {
-        global $DIC;
-        $factory = $DIC->ui()->factory();
-        $renderer = $DIC->ui()->renderer();
-
         $tpl = $this->plugin->getTemplate('tpl.publish_status.html');
         $tpl->setVariable('HEADER', $this->plugin->txt('publish_oer'));
         $tpl->setVariable('STATUS', $this->md_obj->getPublishInfo());
-        $tpl->setVariable('HELP', $this->plugin->getHelpGUI()->getHelpButton('oer_publishing'));
+        $tpl->setVariable('HELP', $this->getHelpButton('oer_publishing'));
 
-        if ($this->md_obj->getPublishStatus() == ilOERinFormPublishMD::STATUS_PUBLIC)
-        {
+        if ($this->md_obj->getPublishStatus() == ilOERinFormPublishMD::STATUS_PUBLIC) {
             $keywords = $this->md_obj->getKeywords();
             if (!empty($keywords)) {
                 $tpl->setVariable('LABEL_KEYWORDS', $this->plugin->txt('label_keywords'));
@@ -173,24 +142,23 @@ class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
 
         }
 
-        $this->ctrl->setParameter($this, 'return', urlencode($_SERVER['SCRIPT_NAME'].'?'.$_SERVER['QUERY_STRING']));
+        $this->ctrl->setParameter($this, 'return', urlencode($_SERVER['SCRIPT_NAME'] . '?' . $_SERVER['QUERY_STRING']));
 
-        switch ($this->md_obj->getPublishStatus())
-        {
+        switch ($this->md_obj->getPublishStatus()) {
             case ilOERinFormPublishMD::STATUS_PRIVATE:
             case ilOERinFormPublishMD::STATUS_READY:
-                $button = $factory->button()->standard($this->plugin->txt('publish'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilOERinFormPublishGUI', 'ilOERinFormPublishWizardGUI')));
-                $tpl->setVariable('PUBLISH', $renderer->render($button));
-            break;
+                $button = $this->factory->button()->standard($this->plugin->txt('publish'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilOERinFormPublishGUI', 'ilOERinFormPublishWizardGUI')));
+                $tpl->setVariable('PUBLISH', $this->renderer->render($button));
+                break;
 
             case ilOERinFormPublishMD::STATUS_PUBLIC:
-                $button = $factory->button()->standard($this->plugin->txt('republish'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilOERinFormPublishGUI', 'ilOERinFormPublishWizardGUI')));
-                $tpl->setVariable('REPUBLISH', $renderer->render($button));
+                $button = $this->factory->button()->standard($this->plugin->txt('republish'), $this->ctrl->getLinkTargetByClass(array('ilUIPluginRouterGUI', 'ilOERinFormPublishGUI', 'ilOERinFormPublishWizardGUI')));
+                $tpl->setVariable('REPUBLISH', $this->renderer->render($button));
                 break;
 
             case ilOERinFormPublishMD::STATUS_BROKEN:
-                $button = $factory->button()->standard($this->plugin->txt('unpublish'), $this->getLinkTarget('unpublish'));
-                $tpl->setVariable('UNPUBLISH', $renderer->render($button));
+                $button = $this->factory->button()->standard($this->plugin->txt('unpublish'), $this->getLinkTarget('unpublish'));
+                $tpl->setVariable('UNPUBLISH', $this->renderer->render($button));
                 break;
         }
 
@@ -198,12 +166,24 @@ class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
     }
 
     /**
+     * Get the HTML code of a help button for a screen
+     */
+    public function getHelpButton(string $a_help_id) : string
+    {
+        $url = $this->config->get($a_help_id);
+        if (!empty($url)) {
+            $link = $this->factory->link()->standard('➜ ' . $this->lng->txt($a_help_id), $url)
+                ->withOpenInNewViewport(true);
+            return $this->renderer->render($link);
+        }
+        return '';
+    }
+
+    /**
      * Return to the parent GUI
      */
-    protected function returnToParent()
+    protected function returnToParent(): void
     {
         $this->ctrl->redirectToURL($_GET['return']);
     }
-
 }
-?>

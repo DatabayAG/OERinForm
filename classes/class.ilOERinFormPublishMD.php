@@ -1,14 +1,9 @@
 <?php
 // Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
-include_once("./Services/MetaData/classes/class.ilMD.php");
- 
+
 /**
  * Extended metadata for publishing OER
- *
- * @author Fred Neumann <fred.neumann@fau.de>
- * @version $Id$
- *
  */
 class ilOERinFormPublishMD extends ilMD
 {
@@ -26,64 +21,59 @@ class ilOERinFormPublishMD extends ilMD
     const STATUS_BROKEN = 'broken';
 
 
-    /** @var array list of supported publishing formats */
-    protected $publishFormats = array('oai_ilias', 'oai_dc', 'oai_lom-eaf');
+    /** list of supported publishing formats */
+    protected array $publishFormats = ['oai_ilias', 'oai_dc', 'oai_lom-eaf'];
 
 
-    /** @var  ilOERinFormPlugin $plugin */
-    protected $plugin;
+    protected ilTree $tree;
+    protected ilAccessHandler $access;
+    protected ilOERinFormPlugin $plugin;
 
-    /** @var ilMDGeneral */
-    protected $secGeneral;
+    protected ilMDGeneral $secGeneral;
+    protected ilMDLifecycle $secLifecycle;
 
-    /** @var ilMDLifecycle */
-    protected $secLifecycle;
+    public function __construct(
+        int $a_rbac_id = 0,
+        int $a_obj_id = 0,
+        string $a_type = ''
+    ) {
+        parent::__construct($a_rbac_id, $a_obj_id, $a_type);
 
-    /**
-     * Inject the plugin object
-     * (must be called directly after construction)
-     * @param ilOERinFormPlugin $a_plugin
-     */
-    public function setPlugin($a_plugin)
-    {
-        $this->plugin = $a_plugin;
+        global $DIC;
+        $this->tree = $DIC->repositoryTree();
+        $this->access = $DIC->access();
+
+        $this->plugin = ilOERinFormPlugin::getInstance();
     }
+
 
     /**
      * Get a public red_id for the object
-     * @return int|bool
      */
-    public function getPublicRefId()
+    protected function getPublicRefId(): ?int
     {
-        global $DIC;
-        $tree = $DIC->repositoryTree();
-
         $cat_ref_id = $this->plugin->getConfig()->get('pub_ref_id');
         if (empty($cat_ref_id)) {
-            return false;
+            return null;
         }
-        $ref_ids = ilObject::_getAllReferences($this->rbac_id);
+        $ref_ids = ilObject::_getAllReferences($this->getRBACId());
         foreach ($ref_ids as $ref_id) {
-            if ($tree->isGrandChild($cat_ref_id, $ref_id) && !ilObject::_isInTrash($ref_id)) {
+            if ($this->tree->isGrandChild($cat_ref_id, $ref_id) && !ilObject::_isInTrash($ref_id)) {
                 return $ref_id;
             }
         }
-        return false;
+        return null;
     }
 
     /**
      * Check if the public reference is visible for anonymous
-     * @return bool
      */
-    public function isPublicRefIdPublic()
+    public function isPublicRefIdPublic(): bool
     {
-        global $DIC;
-        $ilAccess = $DIC->access();
-
-        if ($ref_id = $this->getPublicRefId()) {
+        if (!empty($ref_id = $this->getPublicRefId())) {
             return (
-                $ilAccess->checkAccessOfUser(ANONYMOUS_USER_ID, 'visible', '', $ref_id)
-                && $ilAccess->checkAccessOfUser(ANONYMOUS_USER_ID, 'visible', '', $ref_id)
+                $this->access->checkAccessOfUser(ANONYMOUS_USER_ID, 'visible', '', $ref_id)
+                && $this->access->checkAccessOfUser(ANONYMOUS_USER_ID, 'visible', '', $ref_id)
             );
         }
         return false;
@@ -91,12 +81,10 @@ class ilOERinFormPublishMD extends ilMD
 
     /**
      * Try to create a public reference for the object
-     * @param ilObject $object
-     * @return int  the public ref_id
      */
-    public function createPublicRefId($object)
+    public function createPublicRefId(ilObject $object): ?int
     {
-        if ($ref_id = $this->getPublicRefId()) {
+        if (!empty($ref_id = $this->getPublicRefId())) {
             return $ref_id;
         }
 
@@ -108,35 +96,33 @@ class ilOERinFormPublishMD extends ilMD
             $object->setPermissions($cat_ref_id);
             return $this->getPublicRefId();
         }
-        return false;
+        return null;
     }
 
     /**
      * Get a public url for the object
      * @return string
      */
-    public function getPublicUrl()
+    public function getPublicUrl(): string
     {
-        require_once("Services/Link/classes/class.ilLink.php");
-        return ilLink::_getStaticLink($this->getPublicRefId());
+        if (!empty($ref_id = $this->getPublicRefId())) {
+            return ilLink::_getStaticLink($this->getPublicRefId());
+        }
+        return '';
     }
 
     /**
      * Get the common path of publishing files for a format
-     * @param string $format
-     * @return string
      */
-    public function getPublishPath($format)
+    public function getPublishPath(string $format): string
     {
         return CLIENT_DATA_DIR . '/oerinf/publish/' . $format;
     }
 
     /**
-     * get the full path of a publishing file for a format
-     * @param string $format
-     * @return string
+     * Get the full path of a publishing file for a format
      */
-    public function getPublishFile($format)
+    public function getPublishFile(string $format): string
     {
         return $this->getPublishPath($format) . '/ILIAS-'
             . sprintf('%09d', IL_INST_ID) . '-'
@@ -146,33 +132,30 @@ class ilOERinFormPublishMD extends ilMD
 
     /**
      * Get the publishing date
-     * @return bool|int
      */
-    public function getPublishDate()
+    protected function getPublishDate(): ?int
     {
         $format = $this->publishFormats[0];
         $file = $this->getPublishFile($format);
         if (is_file($file)) {
             return filemtime($file);
         }
-        return false;
+        return null;
     }
 
     /**
      * Get the OAI publishing status
-     * @return string
      */
-    public function getPublishStatus()
+    public function getPublishStatus(): string
     {
-        global $lng;
         $date = $this->getPublishDate();
         $public = $this->isPublicRefIdPublic();
 
-        if ($date && $public) {
+        if (isset($date) && $public) {
             return self::STATUS_PUBLIC;
-        } elseif ($date > 0 && !$public) {
+        } elseif (isset($date) && !$public) {
             return self::STATUS_BROKEN;
-        } elseif (!$date && $public) {
+        } elseif (!isset($date) && $public) {
             return self::STATUS_READY;
         } else {
             return self::STATUS_PRIVATE;
@@ -183,7 +166,7 @@ class ilOERinFormPublishMD extends ilMD
      * Get an info string about the publishing status
      * @return string
      */
-    public function getPublishInfo()
+    public function getPublishInfo(): string
     {
         switch ($this->getPublishStatus()) {
             case self::STATUS_PRIVATE:
@@ -198,15 +181,15 @@ class ilOERinFormPublishMD extends ilMD
                 return $this->plugin->txt('label_published') . ' (' . ilDatePresentation::formatDate($dateObj) . ')';
 
             case self::STATUS_BROKEN:
+            default:
                 return $this->plugin->txt("label_broken");
         }
     }
 
     /**
      * Get an instanciated general section
-     * @return ilMDGeneral
      */
-    public function getSectionGeneral()
+    protected function getSectionGeneral(): ilMDGeneral
     {
         if (!isset($this->secGeneral))
         {
@@ -221,9 +204,8 @@ class ilOERinFormPublishMD extends ilMD
 
     /**
      * Get an instanciated lifecycle section
-     * @return ilMDLifecycle
      */
-    public function getSectionLifecycle()
+    protected function getSectionLifecycle(): ilMDLifecycle
     {
         if (!isset($this->secLifecycle))
         {
@@ -237,9 +219,8 @@ class ilOERinFormPublishMD extends ilMD
 
     /**
      * Get a comma separated list of keywords
-     * @return string
      */
-    public function getKeywords()
+    public function getKeywords(): string
     {
         /** @var ilMDSettings $settings */
         $settings = ilMDSettings::_getInstance();
@@ -258,9 +239,8 @@ class ilOERinFormPublishMD extends ilMD
 
     /**
      * Get a comma separated list of authors
-     * @return string
      */
-    public function getAuthors()
+    public function getAuthors(): string
     {
         $settings = ilMDSettings::_getInstance();
         if (is_object($lifecycle = $this->getSectionLifecycle()))
@@ -287,7 +267,7 @@ class ilOERinFormPublishMD extends ilMD
     /**
      * Get the Copyright description
      */
-    public function getCopyrightDescription()
+    public function getCopyrightDescription(): string
     {
         $copyright = "";
         if(is_object($rights = $this->getRights()))
@@ -299,21 +279,19 @@ class ilOERinFormPublishMD extends ilMD
 
     /**
      * Publish the object
-     * @return bool
      */
-    public function publish()
+    public function publish(): bool
     {
         if (!$this->isPublicRefIdPublic()) {
             return false;
         }
 
-        include_once 'Services/MetaData/classes/class.ilMD2XML.php';
         $md2xml = new ilMD2XML($this->getRBACId(), $this->getObjId(), $this->getObjType());
         $md2xml->setExportMode(true);
         $md2xml->startExport();
 
         foreach ($this->publishFormats as $format) {
-            ilUtil::makeDirParents($this->getPublishPath($format));
+            ilFileUtils::makeDirParents($this->getPublishPath($format));
             $file = $this->getPublishFile($format);
             file_put_contents($file, $this->createPublishFormat($md2xml->getXML(), $format));
         }
@@ -324,12 +302,17 @@ class ilOERinFormPublishMD extends ilMD
      * Unpublish the object
      * @return bool
      */
-    public function unpublish()
+    public function unpublish(): bool
     {
         foreach ($this->publishFormats as $format) {
             $file = $this->getPublishFile($format);
             if ((is_file($file))) {
-                @unlink($file);
+                try {
+                    unlink($file);
+                }
+                catch(Exception $e) {
+                    return false;
+                }
             }
         }
         return true;
@@ -340,9 +323,9 @@ class ilOERinFormPublishMD extends ilMD
      *
      * @param string $a_xml the original ilias meta data xml
      * @param string $a_format format identifier (@see $this->publishFormats)
-     * @return mixed|string            xml of the target format
+     * @return string xml of the target format
      */
-    public function createPublishFormat($a_xml, $a_format)
+    public function createPublishFormat(string $a_xml, string $a_format): string
     {
         $xml_doc = new DOMDocument('1.0', 'UTF-8');
         $xml_doc->loadXML($a_xml);
@@ -363,9 +346,9 @@ class ilOERinFormPublishMD extends ilMD
 
     /**
      * Get the CC license identifiers for the configured CC licenses
-     * @return array
+     * @return string[] lsit of license constants
      */
-    public function getAvailableCCLicenses()
+    public function getAvailableCCLicenses(): array
     {
         $map = [
             self::CC0 => '',
@@ -411,9 +394,9 @@ class ilOERinFormPublishMD extends ilMD
 
     /**
      * Get the CC license of the current object
-     * @return string
+     * @string license constant
      */
-    public function getCCLicense()
+    public function getCCLicense(): string
     {
         $license = ilMDRights::_lookupDescription($this->getRBACId(), $this->getObjId());
         foreach ($this->getAvailableCCLicenses() as $cc => $value) {
@@ -426,10 +409,12 @@ class ilOERinFormPublishMD extends ilMD
 
     /**
      * Mix cc licenses
-     * @param $inArray
-     * @return array
+     * ported from https://github.com/rootzoll/ccmixer
+     *
+     * @param string[] $inArray list of license constants for the parts
+     * @return string[] list of possible license constants for the whole
      */
-    public function ccMixer($inArray)
+    public function ccMixer(array $inArray): array
     {
         $cczero = true;
         $ccby = true;
@@ -553,7 +538,7 @@ class ilOERinFormPublishMD extends ilMD
             }
         }
 
-        $result = array();
+        $result = [];
         if ($cczero) $result[] = self::CC0;
         if ($ccby) $result[] = self::CC_BY;
         if ($ccbysa) $result[] = self::CC_BY_SA;
@@ -565,5 +550,3 @@ class ilOERinFormPublishMD extends ilMD
         return $result;
     }
 }
-
-?>

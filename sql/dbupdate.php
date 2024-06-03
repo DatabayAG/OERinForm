@@ -7,8 +7,6 @@
 
     /**
      * OERinForm plugin: database update script
-     *
-     * @author Fred Neumann <fred.neumann@fau.de>
      */
 ?>
 <#2>

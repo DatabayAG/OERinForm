@@ -51,14 +51,8 @@ Customizing/global/plugins/Services/UIComponent/UserInterfaceHook
 Konfiguration
 -------------
 
-In der *Grund-Konfiguration* könenn Sie eine Kategorie aus dem öffentlichen Bereich von ILIAS auswählen, in welcher die veröffentlichten Inhalte verknüpft werden sollen.
+In der Konfiguration können Sie eine Kategorie aus dem öffentlichen Bereich von ILIAS auswählen, in welcher die veröffentlichten Inhalte verknüpft werden sollen.
 Die Rechtevoreinstellungen in dieser Kategorie müssen alle neuen Objekte für anonyme Nutzer lesbar machen.
-
-In der *Hilfe-Konfiguration* können Sie das importierte OERinForm-Wiki auswählen.
-Anschließend sehen Sie in einer Tabelle unterhalb der Auswahl, welche Hilfeseiten des Wikis automatisch mit Hilfe-Buttons im Plugin angezeigt werden.
-Dazu muss es im Wiki einen benutzerdefinieten Metadatensatz mit Titel 'OERinForm' und darin ein Textfeld mit Titel 'ID' geben.
-Seiten mit der entsprechenden ID werden den Hilfe-Buttons im Plugin zugeordnet.
-Sie können auf die Weise das Wiki bearbeiten und statt der vorgegebenen Ihre eigenen Hilfeseiten mit dem Plugin verknüpfen.
 
 Verwendung
 ----------

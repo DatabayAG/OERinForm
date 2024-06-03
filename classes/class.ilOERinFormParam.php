@@ -1,82 +1,54 @@
 <?php
+
 // Copyright (c) 2018 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
-require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/OERinForm/classes/form/class.ilOERinFormRepositorySelectInputGUI.php');
-
 /**
- * Class ilOERinFormParam
+ * Data structure for a parameter in plugin configuration or in the puplishing of an object
+ * Provides form elements and casting of value inputs fpr parameter types
  */
 class ilOERinFormParam
 {
-	/**
-	 * Defined parameter types
-	 */
-	const TYPE_HEAD = 'head';
-    const TYPE_TEXT = 'text';
-    const TYPE_BOOLEAN = 'bool';
-    const TYPE_INT = 'int';
-	const TYPE_FLOAT = 'float';
-	const TYPE_REF_ID = 'ref_id';
+    //
+    // Defined parameter types
+    //
+    public const TYPE_HEAD = 'head';
+    public const TYPE_TEXT = 'text';
+    public const TYPE_BOOLEAN = 'bool';
+    public const TYPE_INT = 'int';
+    public const TYPE_FLOAT = 'float';
+    public const TYPE_REF_ID = 'ref_id';
 
+    //
+    // Parameter properties
+    //
+    public string $name;            // must be unique
+    public string $title;
+    public string $description;
+    public string $type;
+    public $value;                  // type depends on parameter type
 
-	/**
-	 * @var string		name of the parameter (should be unique within an evaluation class)
-	 */
-	public $name;
-
-	/**
-     * @var string     title of the parameter
-     */
-	public $title;
-
-
-    /**
-     * @var string     description of the parameter
-     */
-    public $description;
-
-
-    /**
-	 * @var string		type of the parameter
-	 */
-	public $type;
-
-	/**
-	 * @var mixed 		actual value
-	 */
-	public $value;
-
-
-    /**
-     * Create a parameter
-     *
-     * @param string $a_name
-     * @param string $a_title
-     * @param string $a_description
-     * @param string $a_type
-	 * @param mixed $a_value
-     * @return ilOERinFormParam
-     */
-    public static function _create($a_name, $a_title, $a_description, $a_type = self::TYPE_TEXT, $a_value = null)
-    {
-        $param = new self;
-		$param->name = $a_name;
-		$param->title = $a_title;
-		$param->description = $a_description;
-		$param->type = $a_type;
-		$param->value = $a_value;
-		
-		return $param;
+    public static function _create(
+        string $a_name,
+        string $a_title,
+        string $a_description,
+        string $a_type = self::TYPE_TEXT,
+        $a_value = null
+    ): ilOERinFormParam {
+        $param = new self();
+        $param->name = $a_name;
+        $param->title = $a_title;
+        $param->description = $a_description;
+        $param->type = $a_type;
+        $param->value = $a_value;
+        return $param;
     }
 
     /**
      * Set the value and cast it to the correct type
-     * @param null $value
      */
-    public function setValue($value = null)
+    public function setValue($value = null): void
     {
-        switch($this->type)
-        {
+        switch($this->type) {
             case self::TYPE_TEXT:
                 $this->value = (string) $value;
                 break;
@@ -84,13 +56,13 @@ class ilOERinFormParam
                 $this->value = (bool) $value;
                 break;
             case self::TYPE_INT:
-                $this->value = (integer) $value;
+                $this->value = (int) $value;
                 break;
             case self::TYPE_FLOAT:
                 $this->value = (float) $value;
                 break;
             case self::TYPE_REF_ID:
-                $this->value = (integer) $value;
+                $this->value = (int) $value;
                 break;
         }
     }
@@ -98,14 +70,13 @@ class ilOERinFormParam
     /**
      * Get a form item for setting the parameter
      */
-    public function getFormItem()
+    public function getFormItem(): ilFormPropertyGUI
     {
         $title = $this->title;
         $description = $this->description;
         $postvar = $this->name;
 
-        switch($this->type)
-        {
+        switch($this->type) {
             case self::TYPE_HEAD:
                 $item = new ilFormSectionHeaderGUI();
                 $item->setTitle($title);
@@ -131,19 +102,17 @@ class ilOERinFormParam
                 $item->setValue($this->value);
                 break;
             case self::TYPE_REF_ID:
-                $item = new ilOERinFormRepositorySelectInputGUI($title, $postvar);
-                $item->setSelectableTypes(['wiki']);
+                $item = new ilNumberInputGUI($title, $postvar);
+                $item->allowDecimals(false);
+                $item->setSize(10);
                 $item->setValue($this->value);
                 break;
         }
 
-        if (strpos($description, '-') !== 0)
-        {
+        if (strpos($description, '-') !== 0) {
             $item->setInfo($description);
         }
 
-
         return $item;
     }
-
 }

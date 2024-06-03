@@ -1,8 +1,6 @@
 <?php
 // Copyright (c) 2018 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
 
-require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/OERinForm/classes/class.ilOERinFormParam.php');
-
 /**
  * OERinForm plugin data class
  *
@@ -11,7 +9,7 @@ require_once('Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/
  */
 class ilOERinFormData
 {
-    protected $param_list = [
+    protected array $param_list = [
         'check_rights' => [
             'cr_berechtigung' => ilOERinFormParam::TYPE_HEAD,
             'cr_schoepfung' => ilOERinFormParam::TYPE_BOOLEAN,
@@ -65,26 +63,25 @@ class ilOERinFormData
         ]
     ];
 
-    /** @var int obj_id */
-    protected $obj_id;
+
+    protected ilDBInterface $db;
+    protected ilOERinFormPlugin $plugin;
+    protected int $obj_id;
 	/**
 	 * @var ilOERinFormParam[]	$params		parameters: 	name => ilOERinFormParam
 	 */
-	protected $params = array();
+	protected array $params = [];
 
-    /**
-     * @var ilOERinFormPlugin
-     */
-	protected $plugin;
+
 
 
 	/**
-	 * Constructor.
-	 * @param ilPlugin
-     * @param int obj_id;
+	 * Constructor
 	 */
-	public function __construct($a_plugin_object, $a_obj_id)
+	public function __construct(ilOERinFormPlugin $a_plugin_object, int $a_obj_id)
 	{
+        global $DIC;
+        $this->db = $DIC->database();
 		$this->plugin = $a_plugin_object;
 		$this->obj_id = $a_obj_id;
 
@@ -107,8 +104,6 @@ class ilOERinFormData
 
 	public function getIncludedLicenses()
     {
-        $this->plugin->includeClass('class.ilOERinFormPublishMD.php');
-
         $licenses = array();
 
         if ($this->get('sl_cc0')) $licenses[] = ilOERinFormPublishMD::CC0;
@@ -126,7 +121,7 @@ class ilOERinFormData
      * Get the array of all parameters for a section
      * @return ilOERinFormParam[]
      */
-	public function getParamsBySection($section)
+	public function getParamsBySection($section): array
     {
         $params = [];
         foreach ($this->param_list[$section] as $name => $type)
@@ -137,10 +132,9 @@ class ilOERinFormData
     }
 
     /**
-     * Get all parameters as an array
-     * @return array name => value
+     * Get all parameters as an assoc array of name => value
      */
-    public function getAllValues()
+    public function getAllValues(): array
     {
         $result = array();
         foreach ($this->params as $name => $param)
@@ -152,10 +146,9 @@ class ilOERinFormData
 
     /**
      * Get the value of a named parameter
-     * @param $name
      * @return  mixed
      */
-	public function get($name)
+	public function get(string $name)
     {
         if (!isset($this->params[$name]))
         {
@@ -169,11 +162,10 @@ class ilOERinFormData
 
     /**
      * Set the value of the named parameter
-     * @param string $name
      * @param mixed $value
      *
      */
-    public function set($name, $value = null)
+    public function set(string $name, $value = null): void
     {
        $param = $this->params[$name];
 
@@ -187,14 +179,11 @@ class ilOERinFormData
     /**
      * Read the configuration from the database
      */
-	public function read()
+	public function read(): void
     {
-        global $DIC;
-        $ilDB = $DIC->database();
-
-        $query = "SELECT * FROM oerinf_data WHERE obj_id = ". $ilDB->quote($this->obj_id, 'integer');
-        $res = $ilDB->query($query);
-        while($row = $ilDB->fetchAssoc($res))
+        $query = "SELECT * FROM oerinf_data WHERE obj_id = ". $this->db->quote($this->obj_id, 'integer');
+        $res = $this->db->query($query);
+        while($row = $this->db->fetchAssoc($res))
         {
             $this->set($row['param_name'], $row['param_value']);
         }
@@ -203,14 +192,11 @@ class ilOERinFormData
     /**
      * Write the configuration to the database
      */
-    public function write()
+    public function write(): void
     {
-        global $DIC;
-        $ilDB = $DIC->database();
-
         foreach ($this->params as $param)
         {
-            $ilDB->replace('oerinf_data',
+            $this->db->replace('oerinf_data',
                 array(
                     'obj_id' =>  array('integer', $this->obj_id),
                     'param_name' => array('text', $param->name)
