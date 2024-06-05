@@ -1,7 +1,5 @@
 <?php
 
-// Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
-
 /**
  * Plugin class and sevice locator / factory
  */
@@ -32,7 +30,7 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
     /**
      * Check if the object type is allowed for publishing as oer
      */
-    public static function isAllowedType(string $type): bool
+    public function isAllowedType(string $type): bool
     {
         return in_array($type, ['file','lm','htlm','sahs','glo','wiki', 'tst', 'qpl']);
     }
@@ -51,6 +49,5 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
         }
         return $this->config;
     }
-
 
 }

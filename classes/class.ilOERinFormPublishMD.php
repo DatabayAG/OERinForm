@@ -1,24 +1,22 @@
 <?php
-// Copyright (c) 2017 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
-
 
 /**
  * Extended metadata for publishing OER
  */
 class ilOERinFormPublishMD extends ilMD
 {
-    const CC0 = 'cc0';
-    const CC_BY = 'cc_by';
-    const CC_BY_SA = 'cc_by_sa';
-    const CC_BY_ND = 'cc_by_nd';
-    const CC_BY_NC = 'cc_by_nc';
-    const CC_BY_NC_SA = 'cc_by_nc_sa';
-    const CC_BY_NC_ND = 'cc_by_nc_nd';
+    public const CC0 = 'cc0';
+    public const CC_BY = 'cc_by';
+    public const CC_BY_SA = 'cc_by_sa';
+    public const CC_BY_ND = 'cc_by_nd';
+    public const CC_BY_NC = 'cc_by_nc';
+    public const CC_BY_NC_SA = 'cc_by_nc_sa';
+    public const CC_BY_NC_ND = 'cc_by_nc_nd';
 
-    const STATUS_PRIVATE = 'private';
-    const STATUS_READY = 'ready';
-    const STATUS_PUBLIC = 'published';
-    const STATUS_BROKEN = 'broken';
+    public const STATUS_PRIVATE = 'private';
+    public const STATUS_READY = 'ready';
+    public const STATUS_PUBLIC = 'published';
+    public const STATUS_BROKEN = 'broken';
 
 
     /** list of supported publishing formats */
@@ -191,13 +189,8 @@ class ilOERinFormPublishMD extends ilMD
      */
     protected function getSectionGeneral(): ilMDGeneral
     {
-        if (!isset($this->secGeneral))
-        {
-            $this->secGeneral = $this->getGeneral();
-            if (!is_object(($this->secGeneral)))
-            {
-                $this->secGeneral = $this->addGeneral();
-            }
+        if (!isset($this->secGeneral)) {
+            $this->secGeneral = $this->getGeneral() ?? $this->addGeneral();
         }
         return $this->secGeneral;
     }
@@ -207,12 +200,8 @@ class ilOERinFormPublishMD extends ilMD
      */
     protected function getSectionLifecycle(): ilMDLifecycle
     {
-        if (!isset($this->secLifecycle))
-        {
-            $this->secLifecycle = $this->getLifecycle();
-            if (!is_object(($this->secLifecycle))) {
-                $this->secLifecycle = $this->addLifecycle();
-            }
+        if (!isset($this->secLifecycle)) {
+            $this->secLifecycle = $this->getLifecycle() ?? $this->addLifecycle();
         }
         return $this->secLifecycle;
     }
@@ -224,11 +213,9 @@ class ilOERinFormPublishMD extends ilMD
     {
         /** @var ilMDSettings $settings */
         $settings = ilMDSettings::_getInstance();
-        if ($md_gen = $this->getSectionGeneral())
-        {
+        if ($md_gen = $this->getSectionGeneral()) {
             $keywords = array();
-            foreach($ids = $md_gen->getKeywordIds() as $id)
-            {
+            foreach($ids = $md_gen->getKeywordIds() as $id) {
                 $md_key = $md_gen->getKeyword($id);
                 $keywords[] = $md_key->getKeyword();
             }
@@ -243,18 +230,14 @@ class ilOERinFormPublishMD extends ilMD
     public function getAuthors(): string
     {
         $settings = ilMDSettings::_getInstance();
-        if (is_object($lifecycle = $this->getSectionLifecycle()))
-        {
+        if (is_object($lifecycle = $this->getLifecycle())) {
             $sep = $author = "";
-            foreach(($ids = $lifecycle->getContributeIds()) as $con_id)
-            {
+            foreach(($ids = $lifecycle->getContributeIds()) as $con_id) {
                 $md_con = $lifecycle->getContribute($con_id);
-                if ($md_con->getRole() == "Author")
-                {
-                    foreach($ent_ids = $md_con->getEntityIds() as $ent_id)
-                    {
+                if ($md_con->getRole() == "Author") {
+                    foreach($ent_ids = $md_con->getEntityIds() as $ent_id) {
                         $md_ent = $md_con->getEntity($ent_id);
-                        $author = $author.$sep.$md_ent->getEntity();
+                        $author = $author . $sep . $md_ent->getEntity();
                         $sep = $settings->getDelimiter() . ' ';
                     }
                 }
@@ -270,8 +253,7 @@ class ilOERinFormPublishMD extends ilMD
     public function getCopyrightDescription(): string
     {
         $copyright = "";
-        if(is_object($rights = $this->getRights()))
-        {
+        if(is_object($rights = $this->getRights())) {
             $copyright = ilMDUtils::_parseCopyright($rights->getDescription());
         }
         return $copyright;
@@ -309,8 +291,7 @@ class ilOERinFormPublishMD extends ilMD
             if ((is_file($file))) {
                 try {
                     unlink($file);
-                }
-                catch(Exception $e) {
+                } catch(Exception $e) {
                     return false;
                 }
             }
@@ -338,8 +319,11 @@ class ilOERinFormPublishMD extends ilMD
         $xslt->importStylesheet($xsl_doc);
         $xml = $xslt->transformToXml($xml_doc);
 
-        $xml = str_replace('{ILIAS_URL}',
-            str_replace('&', '&#38;', $this->getPublicUrl()), $xml);
+        $xml = str_replace(
+            '{ILIAS_URL}',
+            str_replace('&', '&#38;', $this->getPublicUrl()),
+            $xml
+        );
 
         return $xml;
     }
@@ -363,7 +347,7 @@ class ilOERinFormPublishMD extends ilMD
         /** @var ilMDCopyrightSelectionEntry $entry */
         foreach (ilMDCopyrightSelectionEntry::_getEntries() as $entry) {
             $description = $entry->getCopyright();
-            $id = 'il_copyright_entry__' . IL_INST_ID . '__' . (int)$entry->getEntryId();
+            $id = 'il_copyright_entry__' . IL_INST_ID . '__' . (int) $entry->getEntryId();
 
             if (strpos($description, 'creativecommons.org/licenses/zero/')) {
                 $map[self::CC0] = $id;
@@ -539,13 +523,27 @@ class ilOERinFormPublishMD extends ilMD
         }
 
         $result = [];
-        if ($cczero) $result[] = self::CC0;
-        if ($ccby) $result[] = self::CC_BY;
-        if ($ccbysa) $result[] = self::CC_BY_SA;
-        if ($ccbync) $result[] = self::CC_BY_NC;
-        if ($ccbynd) $result[] = self::CC_BY_ND;
-        if ($ccbyncsa) $result[] = self::CC_BY_NC_SA;
-        if ($ccbyncnd) $result[] = self::CC_BY_NC_ND;
+        if ($cczero) {
+            $result[] = self::CC0;
+        }
+        if ($ccby) {
+            $result[] = self::CC_BY;
+        }
+        if ($ccbysa) {
+            $result[] = self::CC_BY_SA;
+        }
+        if ($ccbync) {
+            $result[] = self::CC_BY_NC;
+        }
+        if ($ccbynd) {
+            $result[] = self::CC_BY_ND;
+        }
+        if ($ccbyncsa) {
+            $result[] = self::CC_BY_NC_SA;
+        }
+        if ($ccbyncnd) {
+            $result[] = self::CC_BY_NC_ND;
+        }
 
         return $result;
     }

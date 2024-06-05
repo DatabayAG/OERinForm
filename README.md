@@ -1,10 +1,10 @@
-OERinForm plugin für ILIAS
-==========================
+# OERinForm plugin für ILIAS
 
-Copyright (c) 2018 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
+* Copyright (c) 2018 Institut fuer Lern-Innovation, Friedrich-Alexander-Universitaet Erlangen-Nuernberg, GPLv3, see LICENSE
+* Copyright (c) 2024 Databay AG, GPLv3, see LICENSE
 
 Autoren:
-* Fred Neumann <fred.neumann@ili.fau.de>
+* Fred Neumann <fneumann@databay.de>
 * Jesus Copado <jesus.copado@ili.fau.de>
 
 Das Plugin erlaubt es, Magazin-Inhalte von ILIAS auf ihrem Export-Reiter als OER zu veröffentlichen.
@@ -33,8 +33,7 @@ http://ccmixer.edu-sharing.org/
 
 Aufgrund der verwendeten Begiffe ist das Plugin bislang nur auf Deutsch verfügbar.
 
-Installation
-------------
+## Installation
 
 Wenn Sie das Plugin als ZIP-Datei aus GitHub herunterladen, benennen Sie das entpackte Verzeichnis bitte als *OERinForm*
 (entfernen Sie das Branch-Suffix, z.B. -master und verwenden Sie die Groß-/Kleinschreibung wie angegeben).
@@ -48,22 +47,19 @@ Customizing/global/plugins/Services/UIComponent/UserInterfaceHook
 4. Wählen Sie die Aktion  "Aktivieren" für das OERinForm-Plugin
 5. Wählen Sie die Aktion "Konfigurieren" für das OERinForm-Plugin
 
-Konfiguration
--------------
+## Konfiguration
 
 In der Konfiguration können Sie eine Kategorie aus dem öffentlichen Bereich von ILIAS auswählen, in welcher die veröffentlichten Inhalte verknüpft werden sollen.
 Die Rechtevoreinstellungen in dieser Kategorie müssen alle neuen Objekte für anonyme Nutzer lesbar machen.
 
-Verwendung
-----------
+## Verwendung
 
 Auf den Export-Reiter von Objekten, die als OER in Frage kommen (z.B. Dateien, Lernmodule, Glossare) wird der Status der Veröffentlichung angezeigt.
 Über den Button "Veröffentlichen" startet ein Assistent, der Sie in fünf Schritten durch die notwendigen Prüfungen und Eingaben leitet. Wurden alle notwendigen
 Prüfpunkte von Ihnen bestätigt, können Sie den Inhalt freigeben. Das Objekt wird dann in der öffentlichen Kategorie verlinkt und es werden seine Metadaten zur Indizierung
 durch einen OAI-Server exportiert.
 
-OAI-Export
-----------
+## OAI-Export
 Die Open Archives Initiative (OAI) ist eine Initiative von Betreibern von Preprint- und anderen Dokumentenservern,
 um die auf diesen Servern abgelegten elektronischen Publikationen im Internet besser auffindbar und nutzbar zu machen.
 

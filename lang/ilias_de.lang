@@ -32,6 +32,7 @@ wizard_finish#:#Freigeben
 wizard_next#:#Weiter zu Schritt %s
 wizard_previous#:#Zurück zu Schritt %s
 wizard_step#:#Schritt %s:
+oer_publishing#:#OER-Veröffentlichung
 check_rights#:#Prüfung auf Rechte Dritter
 check_rights_desc#:#Ihr Inhalt kann nur als OER veröffentlicht werden, wenn er frei von Rechten Dritter ist, oder die verwendenten Inhalte Dritter ebenfalls unter einer OER-Lizenz veröfentlicht sind.
 select_license#:#Festlegung einer Lizenz
@@ -134,18 +135,7 @@ fail_ca_tullu#:#Bearbeiten Sie die "TULLU-Regel"
 fail_ca_weitere#:#Bearbeiten Sie "Weitere Prüfungen"
 fail_check_final#:#Bearbeiten Sie die Einverständniserklärung
 basic_configuration#:#Grund-Konfiguration
-help_configuration#:#Hilfe-Konfiguration
-help_id#:#Hilfe-ID
-help_context#:#Hilfe-Kontext
-help_pages#:#Verfügbare Hilfe-Seiten
-help_pages_info#:#Um Hilfe-Seiten aus dem Wiki zu verknüpfen, muss es im Wiki einen benutzerdefinieten Metadatensatz mit Titel 'OERinForm' und darin ein Textfeld mit Titel 'ID' geben. Seiten mit der entsprechenden ID werden den Hilfe-Buttons im Plugin zugeordnet.
-help_page#:#Hilfe-Seite
-help_page_not_found#:#Die Hilfe-Seite wurde leider nicht gefunden!
-help_page_oer_publishing#:#OER veröffentlichen
-help_page_check_rights#:#Prüfung auf Rechte Dritter
-help_page_select_license#:#Festlegung einer Lizenz
-help_page_describe_meta#:#Einordnen und Beschreiben
-help_page_check_attrib#:#Korrekte Lizenzangaben
-help_page_declare_publish#:#Einverständniserklärung und Freigabe
 label_keywords#:#Stichworte:
 label_authors#:#Autor(en):
+config_help#:#Hilfe-Seiten
+config_help_info#:#Hier können Sie Urls angeben, die bei der Veröffentlichung eines Inhalts als Hilfeseiten verlinkt werden. Sie öffnen sich in einem neuen Fenster.

@@ -8,8 +8,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
     #region basic
 
     protected ilOERinFormPublishGUI $publish_gui;
-    protected ilOERinFormPublishMD $md_obj;
-    protected ilObject $parent_obj;
 
     /**
     * Currently executed command (set in executeCommand)
@@ -87,28 +85,23 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
     * Constructor
     * @access public
     */
-    public function __construct(ilOERinFormPublishGUI $publish_gui, ilObject $parent_obj)
+    public function __construct(ilOERinFormPublishGUI $publish_gui)
     {
         parent::__construct();
 
         $this->publish_gui = $publish_gui;
-        $this->parent_obj = $parent_obj;
-
-        $this->md_obj = new ilOERinFormPublishMD($this->parent_obj->getId(), $this->parent_obj->getId(), $this->parent_obj->getType());
         $this->data = $this->plugin->getData($this->parent_obj->getId());
     }
 
 
     /**
      * Execute a command (main entry point)
-     * todo: remove GET access, find better solution for return
+     * todo: check for allowed commands
     */
     public function executeCommand(string $a_cmd = ''): void
     {
-        $this->ctrl->setParameter($this, 'return', urlencode($_GET['return']));
-
         // get the current command
-        $cmd = $a_cmd ? $a_cmd : $this->ctrl->getCmd('checkRights');
+        $cmd = $a_cmd ?: $this->ctrl->getCmd('checkRights');
 
         // simple command
         $this->cmd = $cmd;
@@ -173,7 +166,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $tpl->parseCurrentBlock();
         }
         $tpl->setVariable("HEADER", $this->plugin->txt('publish_oer'));
-        $tpl->setVariable('HELP', $this->publish_gui->getHelpButton($this->step['help_id']));
+        $tpl->setVariable('HELP', $this->getHelpButton($this->step['help_id']));
         $this->tpl->setRightContent($tpl->get());
 
 
@@ -218,13 +211,13 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $tb->addSeparator();
             $button = ilSubmitButton::getInstance();
             $button->setCaption($this->lng->txt('cancel'), false);
-            $button->setCommand('returnToParent');
+            $button->setCommand('cancelPublish');
             $tb->addButtonInstance($button);
 
             $tpl->setVariable("TOOLBAR", $tb->getHTML());
         }
 
-        $this->tabs->setBackTarget($this->lng->txt('export'), $_GET['return']);
+        $this->tabs->setBackTarget($this->lng->txt('export'), $this->getExportUrl());
 
         $this->tpl->setContent($tpl->get());
         $this->tpl->printToStdout();
@@ -330,9 +323,9 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
     /**
     * Return to the parent GUI
     */
-    protected function returnToParent(): void
+    protected function cancelPublish(): void
     {
-        $this->ctrl->redirectToURL($_GET['return']);
+        $this->returnToExport();
     }
 
     #endregion
@@ -913,8 +906,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             } else {
                 $this->md_obj->publish();
             }
-
-            $this->returnToParent();
+            $this->returnToExport();
         }
     }
 
