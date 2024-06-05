@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Base class for GUIs of the plugin
+ * Base class for publishing GUIs
  */
 class ilOERinFormBaseGUI
 {
@@ -15,12 +15,13 @@ class ilOERinFormBaseGUI
     protected ilOERinFormConfig $config;
     protected \ILIAS\UI\Factory $factory;
     protected \ILIAS\UI\Renderer $renderer;
+    protected \ILIAS\HTTP\Services $http;
+    protected \ILIAS\Refinery\Factory $refinery;
 
-    protected int $parent_ref_id;
+    protected int $parent_ref_id = 0;
+    protected int $parent_obj_id;
     protected string $parent_type;
     protected string $parent_gui_class;
-    protected ?ilObject $parent_obj;
-    protected ilOERinFormPublishMD $md_obj;
 
     public function __construct()
     {
@@ -34,24 +35,30 @@ class ilOERinFormBaseGUI
         $this->tpl = $DIC->ui()->mainTemplate();
         $this->factory = $DIC->ui()->factory();
         $this->renderer = $DIC->ui()->renderer();
+        $this->http = $DIC->http();
+        $this->refinery = $DIC->refinery();
 
         $this->plugin = ilOERinFormPlugin::getInstance();
         $this->config = $this->plugin->getConfig();
 
-        $this->parent_ref_id = (int) $_GET['ref_id'];
-        $this->parent_type = ilObject::_lookupType($this->parent_ref_id, true);
-        $this->parent_obj = ilObjectFactory::getInstanceByRefId($this->parent_ref_id);
-        $this->parent_gui_class = ilObjectFactory::getClassByType($this->parent_type) . 'GUI';
+        if ($this->http->wrapper()->query()->has('ref_id')) {
+            $this->parent_ref_id = $this->http->wrapper()->query()->retrieve(
+                'ref_id',
+                $this->refinery->kindlyTo()->int()
+            );
+        }
 
-        $this->md_obj = new ilOERinFormPublishMD($this->parent_obj->getId(), $this->parent_obj->getId(), $this->parent_type);
+        $this->parent_obj_id = ilObject::_lookupObjectId($this->parent_ref_id);
+        $this->parent_type = ilObject::_lookupType($this->parent_obj_id);
+        $this->parent_gui_class = ilObjectFactory::getClassByType($this->parent_type) . 'GUI';
     }
 
 
     /**
-     * Get the HTML code of a help button for a screen
-     * The help id correspods to the config parameter with the help url
+     * Get the ui component of a help button for a screen
+     * The help id is equal to the name of the config parameter with the help url
      */
-    public function getHelpButton(string $a_help_id): string
+    public function getHelpButton(string $a_help_id): ?ILIAS\UI\Component\Component
     {
         $url = $this->config->get($a_help_id);
         if (!empty($url)) {
@@ -60,9 +67,9 @@ class ilOERinFormBaseGUI
                 $this->lng->txt('help'),
                 new \ILIAS\Data\URI($url)
             )->withOpenInNewViewport(true);
-            return $this->renderer->render($link);
+            return $link;
         }
-        return '';
+        return null;
     }
 
     /**
@@ -88,14 +95,5 @@ class ilOERinFormBaseGUI
     protected function returnToObject(): void
     {
         $this->ctrl->redirectToURL(ilLink::_getLink($this->parent_ref_id));
-    }
-
-
-    /**
-     * Get the link target for a command using the ui plugin router
-     */
-    protected function getLinkTarget(string $a_cmd = '', string $a_anchor = '', bool $a_async = false): string
-    {
-        return $this->ctrl->getLinkTargetByClass(['ilUIPluginRouterGUI', get_class($this)], $a_cmd, $a_anchor, $a_async);
     }
 }

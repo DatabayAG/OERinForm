@@ -8,9 +8,10 @@
 
 <!-- language file start -->
 publish_oer#:#OER-Veröffentlichung
-publish#:#Veröffentlichen
+publish#:#Veröffentlichen...
 unpublish#:#Zurückziehen
-republish#:#Aktualisieren
+republish#:#Aktualisieren...
+label_status#:#Status
 label_published#:#Veröffentlicht
 label_ready#:#Nicht veröffentlicht
 label_private#:#Nicht veröffentlicht

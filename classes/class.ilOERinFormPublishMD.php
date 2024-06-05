@@ -80,7 +80,7 @@ class ilOERinFormPublishMD extends ilMD
     /**
      * Try to create a public reference for the object
      */
-    public function createPublicRefId(ilObject $object): ?int
+    public function createPublicRefId(int $obj_id): ?int
     {
         if (!empty($ref_id = $this->getPublicRefId())) {
             return $ref_id;
@@ -89,6 +89,8 @@ class ilOERinFormPublishMD extends ilMD
         $cat_ref_id = $this->plugin->getConfig()->get('pub_ref_id');
 
         if (!empty($cat_ref_id) && ilObject::_lookupType($cat_ref_id, true) == 'cat') {
+            $object = ilObjectFactory::getInstanceByObjId($obj_id);
+
             $object->createReference();
             $object->putInTree($cat_ref_id);
             $object->setPermissions($cat_ref_id);
@@ -347,7 +349,7 @@ class ilOERinFormPublishMD extends ilMD
         /** @var ilMDCopyrightSelectionEntry $entry */
         foreach (ilMDCopyrightSelectionEntry::_getEntries() as $entry) {
             $description = $entry->getCopyright();
-            $id = 'il_copyright_entry__' . IL_INST_ID . '__' . (int) $entry->getEntryId();
+            $id = 'il_copyright_entry__' . IL_INST_ID . '__' . $entry->getEntryId();
 
             if (strpos($description, 'creativecommons.org/licenses/zero/')) {
                 $map[self::CC0] = $id;
