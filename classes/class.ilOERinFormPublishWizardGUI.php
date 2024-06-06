@@ -117,12 +117,11 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         $this->step = $this->getStepByCommand($cmd);
         if (!empty($this->step)) {
             $this->$cmd();
-        }
-        else {
+        } else {
             // todo: check all allowed commands by step
             $this->$cmd();
-//            $this->tpl->setContent('Unknown command ' . $cmd);
-//            $this->tpl->printToStdout();
+            //            $this->tpl->setContent('Unknown command ' . $cmd);
+            //            $this->tpl->printToStdout();
         }
     }
 
@@ -143,11 +142,15 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
     }
 
     /**
-    * Get the form name used for the wizard
-    */
-    protected function getFormName(): string
+     * Get the selected license with existing license as default
+     */
+    protected function getSelectedLicense(): string
     {
-        return get_class($this);
+        $license = $this->data->get('selected_license');
+        if (empty($license)) {
+            $license = $this->md_obj->getCCLicense();
+        }
+        return (string) $license;
     }
 
 
@@ -178,7 +181,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
                 sprintf($this->plugin->txt("wizard_step"), $i + 1),
                 $this->plugin->txt($this->steps[$i]['title_var']),
                 $this->ctrl->getLinkTarget($this, $this->steps[$i]['cmd'])
-
             );
             $steps[] = $step->withStatus($this->checks[$i]['status'] ? $step::SUCCESSFULLY : $step::NOT_STARTED);
             if ($this->steps[$i]['cmd'] == $this->cmd) {
@@ -202,7 +204,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         // show the main screen
         $tpl = $this->plugin->getTemplate("tpl.wizard_page.html");
         $tpl->setVariable("FORMACTION", $this->ctrl->getFormAction($this));
-        $tpl->setVariable("FORMNAME", $this->getFormName());
+        $tpl->setVariable("FORMNAME", get_class($this));
         $tpl->setVariable("CONTENT", $a_content);
 
         // add step specific info and toolbar
@@ -297,7 +299,10 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         // step 2
         $ok = true;
         $messages = [];
-        $license = $this->md_obj->getCCLicense();
+        $license = $this->data->get('selected_license');
+        if (empty($license)) {
+            $license = $this->md_obj->getCCLicense();
+        }
         if (empty($license) || !in_array($license, $this->md_obj->ccMixer($this->data->getIncludedLicenses()))) {
             $ok = false;
             $ready = false;
@@ -445,17 +450,19 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         $form->setFormAction($this->ctrl->getFormAction($this));
 
         foreach ($this->data->getParamsBySection('select_license') as $name => $param) {
-            $item = $param->getFormItem();
-            $form->addItem($item);
+            if ($name != 'selected_license') {
+                $item = $param->getFormItem();
+                $form->addItem($item);
+            }
         }
 
-        $license = $this->md_obj->getCCLicense();
         $radio = new ilRadioGroupInputGUI($this->plugin->txt('selected_license'), 'selected_license');
         $option = new ilRadioOption($this->plugin->txt('no_cc_license'), 'no_cc_license', $this->plugin->txt('no_cc_license_info'));
         $radio->addOption($option);
         $radio->setValue('no_cc_license');
 
         $allowed_licenses = $this->md_obj->ccMixer($this->data->getIncludedLicenses());
+        $selected_license = $this->getSelectedLicense();
 
         foreach ($this->md_obj->getAvailableCCLicenses() as $cc => $value) {
             switch ($cc) {
@@ -500,8 +507,8 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 
             $radio->addOption($option);
 
-            if ($license == $cc) {
-                $radio->setValue($license);
+            if ($selected_license == $cc) {
+                $radio->setValue($selected_license);
             }
         }
         $form->addItem($radio);
@@ -519,27 +526,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
                 $this->data->set($name, $form->getInput($name));
             }
             $this->data->write();
-
-            if(!is_object($this->md_section = $this->md_obj->getRights())) {
-                $this->md_section = $this->md_obj->addRights();
-                $this->md_section->save();
-            }
-
-            $license = $form->getInput('selected_license');
-            $available = $this->md_obj->getAvailableCCLicenses();
-            // set available new cc license
-            if (isset($available[$license])) {
-                $this->md_section->setCopyrightAndOtherRestrictions("Yes");
-                $this->md_section->setDescription($available[$license]);
-                $this->md_section->update();
-            }
-            // remove old cc license
-            elseif (!empty($this->md_obj->getCCLicense())) {
-                $this->md_section->setDescription('');
-                $this->md_section->update();
-
-            }
-
             return true;
         }
 
@@ -988,6 +974,27 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
     protected function saveAndPublish(): void
     {
         if ($this->updatePublish()) {
+
+            if(!is_object($this->md_section = $this->md_obj->getRights())) {
+                $this->md_section = $this->md_obj->addRights();
+                $this->md_section->save();
+            }
+
+            $license = $this->getSelectedLicense();
+            $available = $this->md_obj->getAvailableCCLicenses();
+            // set available new cc license
+            if (isset($available[$license])) {
+                $this->md_section->setCopyrightAndOtherRestrictions("Yes");
+                $this->md_section->setDescription($available[$license]);
+                $this->md_section->update();
+            }
+            // remove old cc license
+            elseif (!empty($this->md_obj->getCCLicense())) {
+                $this->md_section->setDescription('');
+                $this->md_section->update();
+
+            }
+
             if (empty($this->md_obj->createPublicRefId($this->parent_obj_id))) {
                 $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('public_ref_not_created'), true);
             } elseif (!$this->md_obj->isPublicRefIdPublic()) {
@@ -1006,10 +1013,20 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         $form->setCloseTag(false);
         $form->setFormAction($this->ctrl->getFormAction($this));
         $form->addCommandButton('savePublish', $this->lng->txt('save'));
+
         foreach ($this->data->getParamsBySection('check_final') as $name => $param) {
             $item = $param->getFormItem();
             $form->addItem($item);
         }
+
+        $license = $this->getSelectedLicense();
+        $available = $this->md_obj->getAvailableCCLicenses();
+        if (isset($available[$license])) {
+            $item = new ilNonEditableValueGUI($this->plugin->txt('selected_license'), '', true);
+            $item->setValue(ilMDUtils::_parseCopyright($available[$license]));
+            $form->addItem($item);
+        }
+
         return $form;
     }
 

@@ -49,7 +49,7 @@ Customizing/global/plugins/Services/UIComponent/UserInterfaceHook
 
 ### Update auf ILIAS 8
 
-Verwenden Sie die Version aus dem GitHub-Branch main-ilias8
+Verwenden Sie die Version aus dem GitHub-Branch main-ilias8.
 
 Das Setup von ILIAS 8 enthält eine Daten-Migration der vorhandenen CC-Lizenzen. Diese müssen Sie aufrufen, damit das Plugin die Lizenzen erkennt und zur Auswahl anbieten kann:
 
@@ -57,12 +57,14 @@ Das Setup von ILIAS 8 enthält eine Daten-Migration der vorhandenen CC-Lizenzen.
 php setup/setup.php migrate --run md.ilMDCopyrightMigration
 ````
 
+Danach sind die in ILIAS definieren CC-Lizenzen im Schritt "Festlegung einer Lizenz" des Assistenten wieder auswählbar. Eine Auswahl, die Sie hier treffen wird nicht mehr sofort, sondern erst bei der Freigabe in den Metadaten des Inhalts gespeichert. Damit wird verhindert, dass die getroffene Lizenzauswahl bereits vorher wirksam wird und der Inhalt vorab über einen anderen Weg, z.B. den OER Harvester von ILIAS veröffentlicht wird.
+
 ## Konfiguration
 
 In der Konfiguration können Sie eine Kategorie aus dem öffentlichen Bereich von ILIAS auswählen, in welcher die veröffentlichten Inhalte verknüpft werden sollen.
 Die Rechtevoreinstellungen in dieser Kategorie müssen alle neuen Objekte für anonyme Nutzer lesbar machen.
 
-Daneben können Sie Web-Adressen von Hilfeseiten angeben, die auf den Seiten zur Veröffentlichung eines Inhalts verlinkt werden.
+Daneben können Sie in der Plugin-Konfiguration Web-Adressen von Hilfeseiten angeben, die auf den Seiten zur Veröffentlichung eines Inhalts verlinkt werden.
 
 ## Verwendung
 

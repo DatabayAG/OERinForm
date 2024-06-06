@@ -20,7 +20,7 @@ class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
 
         $cmd = $this->ctrl->getCmd();
         switch ($cmd) {
-            case "unpublish":
+            case 'unpublish':
                 $this->$cmd();
                 break;
 
@@ -39,7 +39,6 @@ class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
         $meta = new ilOERinFormPublishMD($this->parent_obj_id, $this->parent_obj_id, $this->parent_type);
         $meta->unpublish();
         $this->tpl->setOnScreenMessage('success', $this->plugin->txt('msg_meta_unpublished'), true);
-        $this->ctrl->setParameter($this, 'section', $_REQUEST['section']);
         $this->returnToExport();
     }
 
@@ -62,20 +61,19 @@ class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
             $this->plugin->txt('label_status') =>  $meta->getPublishInfo()
         ];
 
-        if ($meta->getPublishStatus() == ilOERinFormPublishMD::STATUS_PUBLIC) {
-            $keywords = $meta->getKeywords();
-            if (!empty($keywords)) {
-                $listing[$this->plugin->txt('label_keywords')] = $keywords;
-            }
-            $authors = $meta->getAuthors();
-            if (!empty($authors)) {
-                $listing[$this->plugin->txt('label_authors')] = $authors;
-            }
-            $copyright = $meta->getCopyrightDescription();
-            if (!empty($copyright)) {
-                $listing[$this->plugin->txt('label_license')] = $copyright;
-            }
+        $keywords = $meta->getKeywords();
+        if (!empty($keywords)) {
+            $listing[$this->plugin->txt('label_keywords')] = $keywords;
         }
+        $authors = $meta->getAuthors();
+        if (!empty($authors)) {
+            $listing[$this->plugin->txt('label_authors')] = $authors;
+        }
+        $copyright = $meta->getCopyrightDescription();
+        if (!empty($copyright)) {
+            $listing[$this->plugin->txt('label_licence')] = $copyright;
+        }
+
 
         $right_components = [
             $this->factory->panel()->standard($this->plugin->txt('publish_oer'),
