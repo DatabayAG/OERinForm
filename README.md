@@ -42,15 +42,27 @@ Wenn Sie das Plugin als ZIP-Datei aus GitHub herunterladen, benennen Sie das ent
 Customizing/global/plugins/Services/UIComponent/UserInterfaceHook
 (erzeugen Sie die Unterverzeichnisse, falls nötig)
 
-2. Wechseln Sie zu Asministration > Plugins
+2. Wechseln Sie zu Administration > Plugins
 3. Wählen Sie die Aktion  "Aktualisieren" für das OERinForm-Plugin
 4. Wählen Sie die Aktion  "Aktivieren" für das OERinForm-Plugin
 5. Wählen Sie die Aktion "Konfigurieren" für das OERinForm-Plugin
+
+### Update auf ILIAS 8
+
+Verwenden Sie die Version aus dem GitHub-Branch main-ilias8
+
+Das Setup von ILIAS 8 enthält eine Daten-Migration der vorhandenen CC-Lizenzen. Diese müssen Sie aufrufen, damit das Plugin die Lizenzen erkennt und zur Auswahl anbieten kann:
+
+````
+php setup/setup.php migrate --run md.ilMDCopyrightMigration
+````
 
 ## Konfiguration
 
 In der Konfiguration können Sie eine Kategorie aus dem öffentlichen Bereich von ILIAS auswählen, in welcher die veröffentlichten Inhalte verknüpft werden sollen.
 Die Rechtevoreinstellungen in dieser Kategorie müssen alle neuen Objekte für anonyme Nutzer lesbar machen.
+
+Daneben können Sie Web-Adressen von Hilfeseiten angeben, die auf den Seiten zur Veröffentlichung eines Inhalts verlinkt werden.
 
 ## Verwendung
 

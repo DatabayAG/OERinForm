@@ -46,7 +46,7 @@ class ilOERinFormPublishMD extends ilMD
 
 
     /**
-     * Get a public red_id for the object
+     * Get the ref_id of the published the object
      */
     protected function getPublicRefId(): ?int
     {
@@ -90,7 +90,6 @@ class ilOERinFormPublishMD extends ilMD
 
         if (!empty($cat_ref_id) && ilObject::_lookupType($cat_ref_id, true) == 'cat') {
             $object = ilObjectFactory::getInstanceByObjId($obj_id);
-
             $object->createReference();
             $object->putInTree($cat_ref_id);
             $object->setPermissions($cat_ref_id);
@@ -170,10 +169,10 @@ class ilOERinFormPublishMD extends ilMD
     {
         switch ($this->getPublishStatus()) {
             case self::STATUS_PRIVATE:
-                return $this->plugin->txt("label_private");
+                return $this->plugin->txt('label_private');
 
             case self::STATUS_READY:
-                return $this->plugin->txt("label_ready");
+                return $this->plugin->txt('label_ready');
 
             case self::STATUS_PUBLIC:
                 $date = $this->getPublishDate();
@@ -215,10 +214,10 @@ class ilOERinFormPublishMD extends ilMD
     {
         /** @var ilMDSettings $settings */
         $settings = ilMDSettings::_getInstance();
-        if ($md_gen = $this->getSectionGeneral()) {
-            $keywords = array();
-            foreach($ids = $md_gen->getKeywordIds() as $id) {
-                $md_key = $md_gen->getKeyword($id);
+        if (is_object($general = $this->getGeneral())) {
+            $keywords = [];
+            foreach($ids = $general->getKeywordIds() as $id) {
+                $md_key = $general->getKeyword($id);
                 $keywords[] = $md_key->getKeyword();
             }
             return implode($settings->getDelimiter() . ' ', $keywords);
@@ -262,7 +261,7 @@ class ilOERinFormPublishMD extends ilMD
     }
 
     /**
-     * Publish the object
+     * Create the oai files for publishing the object
      */
     public function publish(): bool
     {
@@ -283,7 +282,7 @@ class ilOERinFormPublishMD extends ilMD
     }
 
     /**
-     * Unpublish the object
+     * Delete the oai files for unpublishing the object
      * @return bool
      */
     public function unpublish(): bool
@@ -305,8 +304,9 @@ class ilOERinFormPublishMD extends ilMD
      * Create the xml for a certain publishing format
      *
      * @param string $a_xml the original ilias meta data xml
-     * @param string $a_format format identifier (@see $this->publishFormats)
+     * @param string $a_format format identifier
      * @return string xml of the target format
+     * @see self::$publishFormats
      */
     public function createPublishFormat(string $a_xml, string $a_format): string
     {
@@ -314,7 +314,7 @@ class ilOERinFormPublishMD extends ilMD
         $xml_doc->loadXML($a_xml);
 
         $xsl_doc = new DOMDocument('1.0', 'UTF-8');
-        $xsl_doc->loadXML(file_get_contents($this->plugin->getDirectory() . "/xsl/" . $a_format . ".xsl"));
+        $xsl_doc->loadXML(file_get_contents($this->plugin->getDirectory() . "/xsl/" . $a_format . '.xsl'));
 
         $xslt = new XSLTProcessor();
         $xslt->setParameter('', 'url', $this->getPublicUrl());
@@ -348,22 +348,22 @@ class ilOERinFormPublishMD extends ilMD
 
         /** @var ilMDCopyrightSelectionEntry $entry */
         foreach (ilMDCopyrightSelectionEntry::_getEntries() as $entry) {
-            $description = $entry->getCopyright();
+            $link = $entry->getCopyrightData()->link();
             $id = 'il_copyright_entry__' . IL_INST_ID . '__' . $entry->getEntryId();
 
-            if (strpos($description, 'creativecommons.org/licenses/zero/')) {
+            if (strpos($link, 'creativecommons.org/licenses/zero/')) {
                 $map[self::CC0] = $id;
-            } elseif (strpos($description, 'creativecommons.org/licenses/by/4.0')) {
+            } elseif (strpos($link, 'creativecommons.org/licenses/by/4.0')) {
                 $map[self::CC_BY] = $id;
-            } elseif (strpos($description, 'creativecommons.org/licenses/by-sa/4.0')) {
+            } elseif (strpos($link, 'creativecommons.org/licenses/by-sa/4.0')) {
                 $map[self::CC_BY_SA] = $id;
-            } elseif (strpos($description, 'creativecommons.org/licenses/by-nd/4.0')) {
+            } elseif (strpos($link, 'creativecommons.org/licenses/by-nd/4.0')) {
                 $map[self::CC_BY_ND] = $id;
-            } elseif (strpos($description, 'creativecommons.org/licenses/by-nc/4.0')) {
+            } elseif (strpos($link, 'creativecommons.org/licenses/by-nc/4.0')) {
                 $map[self::CC_BY_NC] = $id;
-            } elseif (strpos($description, 'creativecommons.org/licenses/by-nc-nd/4.0')) {
+            } elseif (strpos($link, 'creativecommons.org/licenses/by-nc-nd/4.0')) {
                 $map[self::CC_BY_NC_ND] = $id;
-            } elseif (strpos($description, 'creativecommons.org/licenses/by-nc-sa/4.0')) {
+            } elseif (strpos($link, 'creativecommons.org/licenses/by-nc-sa/4.0')) {
                 $map[self::CC_BY_NC_SA] = $id;
             }
         }
