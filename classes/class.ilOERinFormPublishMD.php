@@ -185,27 +185,6 @@ class ilOERinFormPublishMD extends ilMD
         }
     }
 
-    /**
-     * Get an instanciated general section
-     */
-    protected function getSectionGeneral(): ilMDGeneral
-    {
-        if (!isset($this->secGeneral)) {
-            $this->secGeneral = $this->getGeneral() ?? $this->addGeneral();
-        }
-        return $this->secGeneral;
-    }
-
-    /**
-     * Get an instanciated lifecycle section
-     */
-    protected function getSectionLifecycle(): ilMDLifecycle
-    {
-        if (!isset($this->secLifecycle)) {
-            $this->secLifecycle = $this->getLifecycle() ?? $this->addLifecycle();
-        }
-        return $this->secLifecycle;
-    }
 
     /**
      * Get a comma separated list of keywords

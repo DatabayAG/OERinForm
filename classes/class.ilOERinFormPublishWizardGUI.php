@@ -9,17 +9,19 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
     #region basic
 
     protected ilLocatorGUI $locator;
+    protected ilOERinFormData $data;
+    protected ilOERinFormPublishMD $md_obj;
+    protected ilMDSettings $md_settings;
 
     /**
-    * Currently executed command (set in executeCommand)
-    */
-    protected string $cmd = '';
+     * Index of the current wizard step (set in determineStep)
+     */
+    protected int $stepindex = 0;
 
     /**
-    * Data of currently visible step (set in executeCommand)
+    * Data of currently visible step (set in determineStep)
     */
     protected array $step = [];
-
 
     /**
      * Status checks of steps
@@ -35,52 +37,46 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
      */
     protected bool $ready = false;
 
-    /**
-     * Publishing data that is saved for the object
-     */
-    protected ilOERinFormData $data;
 
-    protected ilOERinFormPublishMD $md_obj;
-    protected ilMDSettings $md_settings;
 
     /**
     * Definition of the wizard steps
     */
     protected $steps = [
         [
-                'cmd' => 'checkRights',             			// step command
-                'help_id' => 'check_rights',
-                'title_var' => 'check_rights',  				// lang var for title
-                'desc_var' => 'check_rights_desc',      		// lang var for description
-                'next_cmd' => 'saveRightsAndSelectLicense',    	// command of next step
+            'cmd' => 'describeMeta',                            // step command
+            'save_cmd' => 'saveMeta',                           // command for saving data
+            'help_id' => 'declare_meta',                        // parameter name for the help url
+            'title_var' => 'describe_meta',                     // lang var for title
+            'desc_var' => 'describe_meta_desc',                 // lang var for description
         ],
         [
-                'cmd' => 'selectLicense',
-                'help_id' => 'select_license',
-                'title_var' => 'select_license',
-                'desc_var' => 'select_license_desc',
-                'next_cmd' => 'saveLicenseAndDescribeMeta',
+            'cmd' => 'checkRights',
+            'save_cmd' => 'saveRights',
+            'help_id' => 'check_rights',
+            'title_var' => 'check_rights',
+            'desc_var' => 'check_rights_desc',
         ],
         [
-                'cmd' => 'describeMeta',
-                'help_id' => 'declare_meta',
-                'title_var' => 'describe_meta',
-                'desc_var' => 'describe_meta_desc',
-                'next_cmd' => 'saveMetaAndCheckAttrib',
+            'cmd' => 'selectLicense',
+            'save_cmd' => 'saveLicense',
+            'help_id' => 'select_license',
+            'title_var' => 'select_license',
+            'desc_var' => 'select_license_desc',
         ],
         [
-                'cmd' => 'checkAttrib',
-                'help_id' => 'check_attrib',
-                'title_var' => 'check_attrib',
-                'desc_var' => 'check_attrib_desc',
-                'next_cmd' => 'saveAttribAndDeclarePublish',
+            'cmd' => 'checkAttrib',
+            'save_cmd' => 'saveAttrib',
+            'help_id' => 'check_attrib',
+            'title_var' => 'check_attrib',
+            'desc_var' => 'check_attrib_desc',
         ],
         [
-                'cmd' => 'declarePublish',
-                'help_id' => 'final_publish',
-                'title_var' => 'declare_publish',
-                'desc_var' => 'declare_publish_desc',
-                'next_cmd' => 'saveAndPublish',
+            'cmd' => 'declarePublish',
+            'save_cmd' => 'savePublish',
+            'help_id' => 'final_publish',
+            'title_var' => 'declare_publish',
+            'desc_var' => 'declare_publish_desc',
         ]
     ];
 
@@ -93,9 +89,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 
         global $DIC;
         $this->locator = $DIC['ilLocator'];
-
         $this->data = $this->plugin->getData($this->parent_obj_id);
-
         $this->md_obj = new ilOERinFormPublishMD($this->parent_obj_id, $this->parent_obj_id, $this->parent_type);
         $this->md_settings = ilMDSettings::_getInstance();
     }
@@ -110,36 +104,118 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $this->tpl->setOnScreenMessage('failure', $this->lng->txt("permission_denied"), true);
             $this->returnToObject();
         }
-        $this->ctrl->saveParameter($this, 'ref_id');
 
         $cmd = $this->ctrl->getCmd('checkRights');
-        $this->cmd = $cmd;
-        $this->step = $this->getStepByCommand($cmd);
-        if (!empty($this->step)) {
-            $this->$cmd();
+        $this->determineStep($cmd);
+        $this->ctrl->saveParameter($this, 'ref_id');
+        $this->ctrl->setParameter($this, 'last_step', $this->stepindex);
+
+        switch($cmd) {
+            case 'checkRights':
+            case 'saveRights':
+            case 'selectLicense':
+            case 'saveLicense':
+            case 'describeMeta':
+            case 'saveMeta':
+            case 'checkAttrib':
+            case 'saveAttrib':
+            case 'declarePublish':
+            case 'savePublish':
+            case 'finalPublish':
+            case 'previousStep':
+            case 'nextStep':
+            case 'keywordAutocomplete':
+            case 'cancelPublish':
+                $this->$cmd();
+                break;
+
+            default:
+                $this->showPage('Unknown command ' . $cmd);
+        }
+    }
+
+    /**
+     * Set the current wizard step
+     */
+    protected function determineStep($a_cmd)
+    {
+        // take from request
+        if (in_array($a_cmd, ['previousStep', 'nextStep', 'finalPublish'])
+            && $this->http->wrapper()->query()->has('last_step')
+        ) {
+            $index = $this->http->wrapper()->query()->retrieve(
+                'last_step',
+                $this->refinery->kindlyTo()->int()
+            );
+            if (isset($this->steps[$index])) {
+                $this->stepindex = $index;
+                $this->step = $this->steps[$index];
+                return;
+            }
+        }
+
+        // take from command
+        foreach ($this->steps as $index => $step) {
+            if (in_array($a_cmd, [$step['cmd'] ?? '', $step['save_cmd'] ?? ''])) {
+                $this->stepindex = $index;
+                $this->step = $this->steps[$index];
+                return;
+            }
+        }
+
+        // take first step as default
+        if (empty($step)) {
+            $this->stepindex = 0;
+            $this->step = $this->steps[0];
+        }
+    }
+
+    /**
+     * Save the current form and rediect to the previous step
+     */
+    protected function previousStep()
+    {
+        if (!empty($prev_cmd = $this->steps[$this->stepindex - 1]['cmd'])) {
+            if (!empty($save_cmd = $this->step['save_cmd'] ?? null)) {
+                $this->$save_cmd($prev_cmd);
+            } else {
+                $this->$prev_cmd();
+            }
         } else {
-            // todo: check all allowed commands by step
-            $this->$cmd();
-            //            $this->tpl->setContent('Unknown command ' . $cmd);
-            //            $this->tpl->printToStdout();
+            $this->ctrl->redirect($this);
+        }
+    }
+
+    /**
+     * Save the current form and rediect to the next step
+     */
+    protected function nextStep()
+    {
+        if (!empty($next_cmd = $this->steps[$this->stepindex + 1]['cmd'])) {
+            if (!empty($save_cmd = $this->step['save_cmd'] ?? null)) {
+                $this->$save_cmd($next_cmd);
+            } else {
+                $this->$next_cmd();
+            }
+        } else {
+            $this->ctrl->redirect($this);
         }
     }
 
 
     /**
-     * Get a step by command
-     * Commands without visible steps will return an empty array
-     * todo: check all allowed commands by step
+     * Propare a propery form for the current step
+     * Opening and close tags are provided by the toolbar
      */
-    protected function getStepByCommand(string $a_cmd): array
+    protected function prepareStepForm(): ilPropertyFormGUI
     {
-        foreach ($this->steps as $step) {
-            if ($step['cmd'] ?? '' == $a_cmd) {
-                return $step;
-            }
-        }
-        return [];
+        $form = new ilPropertyFormGUI();
+        $form->setOpenTag(false);
+        $form->setCloseTag(false);
+        $form->setFormAction($this->ctrl->getFormAction($this));
+        return $form;
     }
+
 
     /**
      * Get the selected license with existing license as default
@@ -163,6 +239,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 
         $this->locator->addRepositoryItems($this->parent_ref_id);
         $this->locator->addItem($parent_obj->getTitle(), ilLink::_getLink($this->parent_ref_id, $this->parent_type));
+        $this->tabs->setBackTarget($this->lng->txt('export'), $this->getExportUrl());
 
         $this->tpl->loadStandardTemplate();
         $this->tpl->setLocator();
@@ -172,28 +249,23 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 
         $this->checkAll();
 
-        // show step list and determine the current step number
+        // show the step list
 
-        $steps = [];
-        $stepindex = 0;
-        $stepnum = 1;
-        for ($i = 0; $i < count($this->steps); $i++) {
-            $step = $this->factory->listing()->workflow()->step(
-                sprintf($this->plugin->txt("wizard_step"), $i + 1),
-                $this->plugin->txt($this->steps[$i]['title_var'] ?? ''),
-                $this->ctrl->getLinkTarget($this, $this->steps[$i]['cmd'] ?? '')
+        $ui_steps = [];
+        foreach ($this->steps as $index => $step) {
+            $ui_step = $this->factory->listing()->workflow()->step(
+                sprintf($this->plugin->txt("wizard_step"), $index + 1),
+                $this->plugin->txt($step['title_var'] ?? ''),
+                $this->ctrl->getLinkTarget($this, $step['cmd'] ?? '')
             );
-            $steps[] = $step->withStatus((
-                $this->checks[$i]['status'] ?? false) ? $step::SUCCESSFULLY : $step::NOT_STARTED);
-            if ($this->steps[$i]['cmd'] ?? '' == $this->cmd) {
-                $stepindex = $i;
-                $stepnum = $i + 1;
-            }
+            $ui_steps[] = $ui_step->withStatus((
+                $this->checks[$index]['status'] ?? false
+            ) ? $ui_step::SUCCESSFULLY : $ui_step::NOT_STARTED);
         }
 
         $right_components = [
-            $this->factory->listing()->workflow()->linear($this->plugin->txt('publish_oer'), $steps)
-            ->withActive($stepindex)
+            $this->factory->listing()->workflow()->linear($this->plugin->txt('publish_oer'), $ui_steps)
+            ->withActive($this->stepindex)
         ];
         if (!empty($help = $this->getHelpButton($this->step['help_id'] ?? ''))) {
             $right_components[] = $this->factory->legacy('<br>');
@@ -201,7 +273,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         }
 
         $this->tpl->setRightContent($this->renderer->render($right_components));
-
 
         // show the main screen
 
@@ -211,46 +282,43 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         $tpl->setVariable("CONTENT", $a_content);
 
         // add step specific info and toolbar
-        if (!empty($this->step['cmd'])) {
-
-            $info = $this->plugin->txt($this->step['desc_var'] ?? '');
-            if (!empty($this->checks[$stepindex]['messages']) && is_array($this->checks[$stepindex]['messages'])) {
-                foreach ($this->checks[$stepindex]['messages'] as $message) {
-                    $info .= '<br />' . $this->getNotOkImage(16) . " " . $message;
-                }
+        $info = $this->plugin->txt($this->step['desc_var'] ?? '');
+        if (is_array($this->checks[$this->stepindex]['messages'])) {
+            foreach ($this->checks[$this->stepindex]['messages'] as $message) {
+                $info .= '<br />' . $this->getNotOkImage(16) . " " . $message;
             }
-            $this->tpl->setOnScreenMessage('info', $info);
+        }
+        $this->tpl->setOnScreenMessage('info', $info);
 
-            $tb = new ilToolbarGUI();
-            if (!empty($this->step['next_cmd']) and $stepnum == count($this->steps)) {
-                $button = ilSubmitButton::getInstance();
-                $button->setCaption($this->plugin->txt('wizard_finish'), false);
-                $button->setCommand($this->step['next_cmd']);
-                if ($this->ready) {
-                    $button->setPrimary(true);
-                } else {
-                    $button->setDisabled(true);
-                }
+        // add the navigation toolbar
+        $tb = new ilToolbarGUI();
+        $button = ilSubmitButton::getInstance();
+        $button->setCaption($this->plugin->txt('wizard_previous'), false);
+        $button->setCommand('previousStep');
+        $button->setDisabled($this->stepindex == 0);
+        $tb->addButtonInstance($button);
 
-                $tb->addButtonInstance($button);
-            } elseif (!empty($this->step['next_cmd'])) {
-                $button = ilSubmitButton::getInstance();
-                $button->setCaption(sprintf($this->plugin->txt('wizard_next'), $stepnum + 1), false);
-                $button->setCommand($this->step['next_cmd']);
-                $button->setPrimary(true);
-                $tb->addButtonInstance($button);
-            }
-
-            $tb->addSeparator();
+        if ($this->stepindex == count($this->steps) - 1) {
             $button = ilSubmitButton::getInstance();
-            $button->setCaption($this->lng->txt('cancel'), false);
-            $button->setCommand('cancelPublish');
+            $button->setCaption($this->plugin->txt('wizard_finish'), false);
+            $button->setCommand('finalPublish');
+            $button->setDisabled($this->ready);
             $tb->addButtonInstance($button);
 
-            $tpl->setVariable("TOOLBAR", $tb->getHTML());
+        } elseif ($this->stepindex <= count($this->steps)) {
+            $button = ilSubmitButton::getInstance();
+            $button->setCaption($this->plugin->txt('wizard_next'), false);
+            $button->setCommand('nextStep');
+            $tb->addButtonInstance($button);
         }
 
-        $this->tabs->setBackTarget($this->lng->txt('export'), $this->getExportUrl());
+        $tb->addSeparator();
+        $button = ilSubmitButton::getInstance();
+        $button->setCaption($this->lng->txt('cancel'), false);
+        $button->setCommand('cancelPublish');
+        $tb->addButtonInstance($button);
+
+        $tpl->setVariable("TOOLBAR", $tb->getHTML());
 
         $this->tpl->setContent($tpl->get());
         $this->tpl->printToStdout();
@@ -290,6 +358,17 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         // step 1 (index 0)
         $ok = true;
         $messages = [];
+        if (empty($title = ilObject::_lookupTitle($this->parent_obj_id))
+            || empty($this->md_obj->getAuthors())) {
+            $ok = false;
+            $ready = false;
+            $messages[] = $this->plugin->txt('fail_metadata');
+        }
+        $this->checks[] = ['status' => $ok, 'messages' => $messages];
+
+        // step 2
+        $ok = true;
+        $messages = [];
         if (!($d['cr_schoepfung'] && (($d['cr_erschaffen'] && $d['cr_zustimmung']) || $d['cr_exklusiv']))) {
             $ok = false;
             $ready = false;
@@ -302,7 +381,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         }
         $this->checks[] = ['status' => $ok, 'messages' => $messages];
 
-        // step 2
+        // step 3
         $ok = true;
         $messages = [];
         $license = $this->getSelectedLicense();
@@ -310,17 +389,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $ok = false;
             $ready = false;
             $messages[] = $this->plugin->txt('fail_select_license');
-        }
-        $this->checks[] = ['status' => $ok, 'messages' => $messages];
-
-        // step 3
-        $ok = true;
-        $messages = [];
-        if (empty($title = ilObject::_lookupTitle($this->parent_obj_id))
-            || empty($this->md_obj->getAuthors())) {
-            $ok = false;
-            $ready = false;
-            $messages[] = $this->plugin->txt('fail_metadata');
         }
         $this->checks[] = ['status' => $ok, 'messages' => $messages];
 
@@ -337,7 +405,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $ready = false;
             $messages[] = $this->plugin->txt('fail_ca_tullu');
         }
-        if (!($d['ca_fotos'] && $d['ca_nichtoffen'] && $d['ca_zitat'] && $d['ca_nichtkomm'] && $d['ca_quellen_check'] && $d['ca_quellen_doku'])) {
+        if (!($d['ca_fotos'] && $d['ca_nichtoffen'] && $d['ca_zitat'] && $d['ca_nichtkomm'] && $d['ca_quellen_check'])) {
             $ok = false;
             $ready = false;
             $messages[] = $this->plugin->txt('fail_ca_weitere');
@@ -373,37 +441,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         $this->showPage($form->getHTML());
     }
 
-    protected function saveRights()
-    {
-        if ($this->updateRights()) {
-            $this->tpl->setOnScreenMessage('success', $this->lng->txt("saved_successfully"), true);
-            $this->ctrl->redirect($this, 'checkRights');
-        }
-    }
-
-    protected function saveRightsAndSelectLicense()
-    {
-        if ($this->updateRights()) {
-            $this->ctrl->redirect($this, 'selectLicense');
-        }
-    }
-
-    protected function initRightsCheckForm(): ilPropertyFormGUI
-    {
-        $form = new ilPropertyFormGUI();
-        $form->setOpenTag(false);
-        $form->setCloseTag(false);
-        $form->setFormAction($this->ctrl->getFormAction($this));
-        $form->addCommandButton('saveRights', $this->lng->txt('save'));
-
-        foreach ($this->data->getParamsBySection('check_rights') as $name => $param) {
-            $item = $param->getFormItem();
-            $form->addItem($item);
-        }
-        return $form;
-    }
-
-    protected function updateRights(): bool
+    protected function saveRights($redirect_cmd = 'checkRights')
     {
         $form = $this->initRightsCheckForm();
         if ($form->checkInput()) {
@@ -411,14 +449,26 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
                 $this->data->set($name, $form->getInput($name));
             }
             $this->data->write();
-            return true;
-        }
 
-        $this->cmd = 'checkRights';
-        $this->step = $this->getStepByCommand($this->cmd);
-        $form->setValuesByPost();
-        $this->showPage($form->getHTML());
-        return false;
+            if ($redirect_cmd == 'checkRights') {
+                $this->tpl->setOnScreenMessage('success', $this->lng->txt("saved_successfully"), true);
+            }
+            $this->ctrl->redirect($this, $redirect_cmd);
+        } else {
+            $form->setValuesByPost();
+            $this->showPage($form->getHTML());
+        }
+    }
+
+    protected function initRightsCheckForm(): ilPropertyFormGUI
+    {
+        $form = $this->prepareStepForm();
+        foreach ($this->data->getParamsBySection('check_rights') as $name => $param) {
+            $item = $param->getFormItem();
+            $form->addItem($item);
+        }
+        $form->addCommandButton('saveRights', $this->lng->txt('save'));
+        return $form;
     }
 
     #endregion
@@ -430,28 +480,28 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         $this->showPage($form->getHTML());
     }
 
-    protected function saveLicense(): void
+    protected function saveLicense($redirect_cmd = 'selectLicense'): void
     {
-        if ($this->updateLicense()) {
-            $this->tpl->setOnScreenMessage('success', $this->lng->txt("saved_successfully"), true);
-            $this->ctrl->redirect($this, 'selectLicense');
-        }
-    }
+        $form = $this->initLicenseSelectForm();
+        if ($form->checkInput()) {
+            foreach (array_keys($this->data->getParamsBySection('select_license')) as $name) {
+                $this->data->set($name, $form->getInput($name));
+            }
+            $this->data->write();
+            if ($redirect_cmd == 'selectLicense') {
+                $this->tpl->setOnScreenMessage('success', $this->lng->txt("saved_successfully"), true);
+            }
+            $this->ctrl->redirect($this, $redirect_cmd);
+        } else {
+            $form->setValuesByPost();
+            $this->showPage($form->getHTML());
 
-    protected function saveLicenseAndDescribeMeta(): void
-    {
-        if ($this->updateLicense()) {
-            $this->ctrl->redirect($this, 'describeMeta');
         }
     }
 
     protected function initLicenseSelectForm(): ilPropertyFormGUI
     {
-        $form = new ilPropertyFormGUI();
-        $form->setOpenTag(false);
-        $form->setCloseTag(false);
-        $form->setFormAction($this->ctrl->getFormAction($this));
-
+        $form = $this->prepareStepForm();
         foreach ($this->data->getParamsBySection('select_license') as $name => $param) {
             if ($name != 'selected_license') {
                 $item = $param->getFormItem();
@@ -520,25 +570,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         return $form;
     }
 
-
-    protected function updateLicense(): bool
-    {
-        $form = $this->initLicenseSelectForm();
-        if ($form->checkInput()) {
-            foreach (array_keys($this->data->getParamsBySection('select_license')) as $name) {
-                $this->data->set($name, $form->getInput($name));
-            }
-            $this->data->write();
-            return true;
-        }
-
-        $this->cmd = 'selectLicense';
-        $this->step = $this->getStepByCommand($this->cmd);
-        $form->setValuesByPost();
-        $this->showPage($form->getHTML());
-        return false;
-    }
-
     #endregion
     #region describe_meta
 
@@ -548,19 +579,155 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         $this->showPage($form->getHTML());
     }
 
-    protected function saveMetaAndCheckAttrib(): void
+    protected function saveMeta($redirect_cmd = 'describeMeta'): void
     {
-        if ($this->updateMeta()) {
-            $this->ctrl->redirect($this, 'checkAttrib');
+        $form = $this->initMetaEditForm();
+        if (!$form->checkInput()) {
+            $this->tpl->setOnScreenMessage('failure', $this->lng->txt('title_required'));
+            $form->setValuesByPost();
+            $this->showPage($form->getHTML());
+            return;
         }
-    }
 
-    protected function saveMeta(): void
-    {
-        if ($this->updateMeta()) {
-            $this->tpl->setOnScreenMessage('success', $this->lng->txt("saved_successfully"), true);
-            $this->ctrl->redirect($this, 'describeMeta');
+        // General values, should already be created in the form creation
+        $general = $this->md_obj->getGeneral();
+        $general->setTitle($form->getInput('gen_title'));
+        $general->update();
+
+        // Language
+        $has_language = false;
+        foreach ($ids = $general->getLanguageIds() as $id) {
+            $md_lan = $general->getLanguage($id);
+            $md_lan->setLanguage(
+                new ilMDLanguageItem(
+                    $form->getInput('gen_language_' . $id . '_language')
+                )
+            );
+            $md_lan->update();
+            $has_language = true;
         }
+        if (!$has_language) {
+            $md_lan = $general->addLanguage();
+            $md_lan->setLanguage(
+                new ilMDLanguageItem(
+                    $form->getInput('gen_language_language')
+                )
+            );
+            $md_lan->save();
+        }
+
+
+        // Description
+        foreach ($ids = $general->getDescriptionIds() as $id) {
+            $md_des = $general->getDescription($id);
+            $md_des->setDescription($form->getInput('gen_description_' . $id . '_description'));
+            $md_des->update();
+        }
+
+        // Keyword
+        $keywords = [];
+        if ($this->http->wrapper()->post()->has('keywords')) {
+            $keywords = (array) $this->http->wrapper()->post()->retrieve(
+                'keywords',
+                $this->refinery->identity()
+            );
+        }
+        $keyword_values = $keywords['value'] ?? null;
+        if (is_array($keyword_values)) {
+            ilMDKeyword::updateKeywords($general, $keyword_values);
+        }
+
+        //Educational...
+        // Typical Learning Time
+        $tlt = $form->getInput('tlt');
+        $tlt_set = false;
+        $tlt_post_vars = $this->getTltPostVars();
+        foreach ($tlt_post_vars as $post_var) {
+            $tlt_section = (int) ($tlt[$post_var] ?? 0);
+            if ($tlt_section > 0) {
+                $tlt_set = true;
+                break;
+            }
+        }
+        if ($tlt_set) {
+            if (!is_object($educational = $this->md_obj->getEducational())) {
+                $educational = $this->md_obj->addEducational();
+                $educational->save();
+            }
+            $educational->setPhysicalTypicalLearningTime(
+                (int) ($tlt[$tlt_post_vars['mo']] ?? 0),
+                (int) ($tlt[$tlt_post_vars['d']] ?? 0),
+                (int) ($tlt[$tlt_post_vars['h']] ?? 0),
+                (int) ($tlt[$tlt_post_vars['m']] ?? 0),
+                (int) ($tlt[$tlt_post_vars['s']] ?? 0)
+            );
+            $educational->update();
+        } elseif (is_object($educational = $this->md_obj->getEducational())) {
+            $educational->setPhysicalTypicalLearningTime(0, 0, 0, 0, 0);
+            $educational->update();
+        }
+
+        //Lifecycle...
+        // Authors
+        if ($form->getInput('life_authors') !== '') {
+            if (!is_object($lifecycle = $this->md_obj->getLifecycle())) {
+                $lifecycle = $this->md_obj->addLifecycle();
+                $lifecycle->save();
+            }
+
+            // determine all entered authors
+            $life_authors = $form->getInput('life_authors');
+            $auth_arr = explode($this->md_settings->getDelimiter(), $life_authors);
+            for ($i = 0, $iMax = count($auth_arr); $i < $iMax; $i++) {
+                $auth_arr[$i] = trim($auth_arr[$i]);
+            }
+
+            $md_con_author = "";
+
+            // update existing author entries (delete if not entered)
+            foreach (($ids = $lifecycle->getContributeIds()) as $con_id) {
+                $md_con = $lifecycle->getContribute($con_id);
+                if ($md_con->getRole() === "Author") {
+                    foreach ($ent_ids = $md_con->getEntityIds() as $ent_id) {
+                        $md_ent = $md_con->getEntity($ent_id);
+
+                        // entered author already exists
+                        if (in_array($md_ent->getEntity(), $auth_arr, true)) {
+                            unset($auth_arr[array_search($md_ent->getEntity(), $auth_arr, true)]);
+                        } else {  // existing author has not been entered again -> delete
+                            $md_ent->delete();
+                        }
+                    }
+                    $md_con_author = $md_con;
+                }
+            }
+
+            // insert enterd, but not existing authors
+            if (count($auth_arr) > 0) {
+                if (!is_object($md_con_author)) {
+                    $md_con_author = $lifecycle->addContribute();
+                    $md_con_author->setRole("Author");
+                    $md_con_author->save();
+                }
+                foreach ($auth_arr as $auth) {
+                    $md_ent = $md_con_author->addEntity();
+                    $md_ent->setEntity(ilUtil::stripSlashes($auth));
+                    $md_ent->save();
+                }
+            }
+        } elseif (is_object($lifecycle = $this->md_obj->getLifecycle())) {
+            foreach (($ids = $lifecycle->getContributeIds()) as $con_id) {
+                $md_con = $lifecycle->getContribute($con_id);
+                if ($md_con->getRole() === "Author") {
+                    $md_con->delete();
+                }
+            }
+        }
+
+        if ($redirect_cmd == 'describeMeta') {
+            $this->tpl->setOnScreenMessage('success', $this->lng->txt('saved_successfully'), true);
+        }
+        $this->ctrl->redirect($this, $redirect_cmd);
     }
 
     /**
@@ -569,10 +736,10 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
     protected function initMetaEditForm(): ilPropertyFormGUI
     {
         $this->lng->loadLanguageModule('meta');
-        $this->md_section = $this->md_obj->getGeneral();
-        if(!isset($this->md_section)) {
-            $this->md_section = $this->md_obj->addGeneral();
-            $this->md_section->save();
+        $general = $this->md_obj->getGeneral();
+        if(!isset($general)) {
+            $general = $this->md_obj->addGeneral();
+            $general->save();
         }
         $form = new ilPropertyFormGUI();
         $form->setOpenTag(false);
@@ -585,12 +752,12 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         if($this->md_obj->getObjType() != 'sess') {
             $ti->setRequired(true);
         }
-        $ti->setValue($this->md_section->getTitle());
+        $ti->setValue($general->getTitle());
         $form->addItem($ti);
 
         // description(s)
-        foreach($ids = $this->md_section->getDescriptionIds() as $id) {
-            $md_des = $this->md_section->getDescription($id);
+        foreach($ids = $general->getDescriptionIds() as $id) {
+            $md_des = $general->getDescription($id);
 
             $ta = new ilTextAreaInputGUI(
                 $this->lng->txt("meta_description"),
@@ -609,8 +776,8 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         // language(s)
         $first = "";
         $options = ilMDLanguageItem::_getLanguages();
-        foreach($ids = $this->md_section->getLanguageIds() as $id) {
-            $md_lan = $this->md_section->getLanguage($id);
+        foreach($ids = $general->getLanguageIds() as $id) {
+            $md_lan = $general->getLanguage($id);
             $first_lang = $md_lan->getLanguageCode();
             $si = new ilSelectInputGUI($this->lng->txt("meta_language"), 'gen_language_' . $id . '_language');
             $si->setOptions($options);
@@ -627,8 +794,8 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         // keyword(s)
         $first = true;
         $keywords = array();
-        foreach($ids = $this->md_section->getKeywordIds() as $id) {
-            $md_key = $this->md_section->getKeyword($id);
+        foreach($ids = $general->getKeywordIds() as $id) {
+            $md_key = $general->getKeyword($id);
             if (trim($md_key->getKeyword()) != "") {
                 $keywords[$md_key->getKeywordLanguageCode()][] = $md_key->getKeyword();
             }
@@ -725,158 +892,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         exit;
     }
 
-    /**
-     * Update the meta data
-     * @see ilMDEditorGUI::updateQuickEdit
-     */
-    protected function updateMeta(): bool
-    {
-        // General values
-        $this->md_section = $this->md_obj->getGeneral();
-
-        $form = $this->initMetaEditForm();
-        if (!$form->checkInput()) {
-            $this->tpl->setOnScreenMessage('failure', $this->lng->txt('title_required'));
-            $form->setValuesByPost();
-            $this->showPage($form->getHTML());
-            return false;
-        }
-
-        $this->md_section->setTitle($form->getInput('gen_title'));
-        $this->md_section->update();
-
-        // Language
-        $has_language = false;
-        foreach ($ids = $this->md_section->getLanguageIds() as $id) {
-            $md_lan = $this->md_section->getLanguage($id);
-            $md_lan->setLanguage(
-                new ilMDLanguageItem(
-                    $form->getInput('gen_language_' . $id . '_language')
-                )
-            );
-            $md_lan->update();
-            $has_language = true;
-        }
-        if (!$has_language) {
-            $md_lan = $this->md_section->addLanguage();
-            $md_lan->setLanguage(
-                new ilMDLanguageItem(
-                    $form->getInput('gen_language_language')
-                )
-            );
-            $md_lan->save();
-        }
-
-
-        // Description
-        foreach ($ids = $this->md_section->getDescriptionIds() as $id) {
-            $md_des = $this->md_section->getDescription($id);
-            $md_des->setDescription($form->getInput('gen_description_' . $id . '_description'));
-            $md_des->update();
-        }
-
-        // Keyword
-        $keywords = [];
-        if ($this->http->wrapper()->post()->has('keywords')) {
-            $keywords = (array) $this->http->wrapper()->post()->retrieve(
-                'keywords',
-                $this->refinery->identity()
-            );
-        }
-        $keyword_values = $keywords['value'] ?? null;
-        if (is_array($keyword_values)) {
-            ilMDKeyword::updateKeywords($this->md_section, $keyword_values);
-        }
-
-        //Educational...
-        // Typical Learning Time
-        $tlt = $form->getInput('tlt');
-        $tlt_set = false;
-        $tlt_post_vars = $this->getTltPostVars();
-        foreach ($tlt_post_vars as $post_var) {
-            $tlt_section = (int) ($tlt[$post_var] ?? 0);
-            if ($tlt_section > 0) {
-                $tlt_set = true;
-                break;
-            }
-        }
-        if ($tlt_set) {
-            if (!is_object($this->md_section = $this->md_obj->getEducational())) {
-                $this->md_section = $this->md_obj->addEducational();
-                $this->md_section->save();
-            }
-            $this->md_section->setPhysicalTypicalLearningTime(
-                (int) ($tlt[$tlt_post_vars['mo']] ?? 0),
-                (int) ($tlt[$tlt_post_vars['d']] ?? 0),
-                (int) ($tlt[$tlt_post_vars['h']] ?? 0),
-                (int) ($tlt[$tlt_post_vars['m']] ?? 0),
-                (int) ($tlt[$tlt_post_vars['s']] ?? 0)
-            );
-            $this->md_section->update();
-        } elseif (is_object($this->md_section = $this->md_obj->getEducational())) {
-            $this->md_section->setPhysicalTypicalLearningTime(0, 0, 0, 0, 0);
-            $this->md_section->update();
-        }
-
-        //Lifecycle...
-        // Authors
-        if ($form->getInput('life_authors') !== '') {
-            if (!is_object($this->md_section = $this->md_obj->getLifecycle())) {
-                $this->md_section = $this->md_obj->addLifecycle();
-                $this->md_section->save();
-            }
-
-            // determine all entered authors
-            $life_authors = $form->getInput('life_authors');
-            $auth_arr = explode($this->md_settings->getDelimiter(), $life_authors);
-            for ($i = 0, $iMax = count($auth_arr); $i < $iMax; $i++) {
-                $auth_arr[$i] = trim($auth_arr[$i]);
-            }
-
-            $md_con_author = "";
-
-            // update existing author entries (delete if not entered)
-            foreach (($ids = $this->md_section->getContributeIds()) as $con_id) {
-                $md_con = $this->md_section->getContribute($con_id);
-                if ($md_con->getRole() === "Author") {
-                    foreach ($ent_ids = $md_con->getEntityIds() as $ent_id) {
-                        $md_ent = $md_con->getEntity($ent_id);
-
-                        // entered author already exists
-                        if (in_array($md_ent->getEntity(), $auth_arr, true)) {
-                            unset($auth_arr[array_search($md_ent->getEntity(), $auth_arr, true)]);
-                        } else {  // existing author has not been entered again -> delete
-                            $md_ent->delete();
-                        }
-                    }
-                    $md_con_author = $md_con;
-                }
-            }
-
-            // insert enterd, but not existing authors
-            if (count($auth_arr) > 0) {
-                if (!is_object($md_con_author)) {
-                    $md_con_author = $this->md_section->addContribute();
-                    $md_con_author->setRole("Author");
-                    $md_con_author->save();
-                }
-                foreach ($auth_arr as $auth) {
-                    $md_ent = $md_con_author->addEntity();
-                    $md_ent->setEntity(ilUtil::stripSlashes($auth));
-                    $md_ent->save();
-                }
-            }
-        } elseif (is_object($this->md_section = $this->md_obj->getLifecycle())) {
-            foreach (($ids = $this->md_section->getContributeIds()) as $con_id) {
-                $md_con = $this->md_section->getContribute($con_id);
-                if ($md_con->getRole() === "Author") {
-                    $md_con->delete();
-                }
-            }
-        }
-
-        return true;
-    }
 
     /**
      * @return array{mo: string, d: string, h: string, m: string, s: string}
@@ -904,35 +919,16 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 
     protected function initAttribCheckForm(): ilPropertyFormGUI
     {
-        $form = new ilPropertyFormGUI();
-        $form->setOpenTag(false);
-        $form->setCloseTag(false);
-        $form->setFormAction($this->ctrl->getFormAction($this));
-        $form->addCommandButton('saveAttrib', $this->lng->txt('save'));
-
+        $form = $this->prepareStepForm();
         foreach ($this->data->getParamsBySection('check_attrib') as $name => $param) {
             $item = $param->getFormItem();
             $form->addItem($item);
         }
+        $form->addCommandButton('saveAttrib', $this->lng->txt('save'));
         return $form;
     }
 
-    protected function saveAttrib(): void
-    {
-        if ($this->updateAttrib()) {
-            $this->tpl->setOnScreenMessage('success', $this->lng->txt("saved_successfully"), true);
-            $this->ctrl->redirect($this, 'checkAttrib');
-        }
-    }
-
-    protected function saveAttribAndDeclarePublish(): void
-    {
-        if ($this->updateAttrib()) {
-            $this->ctrl->redirect($this, 'declarePublish');
-        }
-    }
-
-    protected function updateAttrib(): bool
+    protected function saveAttrib($redirect_cmd = 'checkAttrib'): void
     {
         $form = $this->initAttribCheckForm();
         if ($form->checkInput()) {
@@ -940,15 +936,14 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
                 $this->data->set($name, $form->getInput($name));
             }
             $this->data->write();
-            return true;
-        }
 
-        $this->cmd = 'checkAttrib';
-        $this->step = $this->getStepByCommand($this->cmd);
+            if ($redirect_cmd == 'checkAttrib') {
+                $this->tpl->setOnScreenMessage('success', $this->lng->txt("saved_successfully"), true);
+            }
+            $this->ctrl->redirect($this, $redirect_cmd);
+        }
         $form->setValuesByPost();
         $this->showPage($form->getHTML());
-        return false;
-
     }
 
     #endregion
@@ -960,48 +955,24 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         $this->showPage($form->getHTML());
     }
 
-    protected function savePublish(): void
+    protected function savePublish($redirect_cmd = 'declarePublish'): void
     {
-        if ($this->updatePublish()) {
-            $this->tpl->setOnScreenMessage('success', $this->lng->txt("saved_successfully"), true);
-            $this->ctrl->redirect($this, 'declarePublish');
+        $form = $this->initPublishForm();
+        if ($form->checkInput()) {
+            foreach (array_keys($this->data->getParamsBySection('check_final')) as $name) {
+                $this->data->set($name, $form->getInput($name));
+            }
+            $this->data->write();
+            if ($redirect_cmd == 'declarePublish') {
+                $this->tpl->setOnScreenMessage('success', $this->lng->txt("saved_successfully"), true);
+            }
+            $this->ctrl->redirect($this, $redirect_cmd);
         }
+
+        $form->setValuesByPost();
+        $this->showPage($form->getHTML());
     }
 
-    protected function saveAndPublish(): void
-    {
-        if ($this->updatePublish()) {
-
-            if(!is_object($this->md_section = $this->md_obj->getRights())) {
-                $this->md_section = $this->md_obj->addRights();
-                $this->md_section->save();
-            }
-
-            $license = $this->getSelectedLicense();
-            $available = $this->md_obj->getAvailableCCLicenses();
-            // set available new cc license
-            if (isset($available[$license])) {
-                $this->md_section->setCopyrightAndOtherRestrictions("Yes");
-                $this->md_section->setDescription($available[$license]);
-                $this->md_section->update();
-            }
-            // remove old cc license
-            elseif (!empty($this->md_obj->getCCLicense())) {
-                $this->md_section->setDescription('');
-                $this->md_section->update();
-
-            }
-
-            if (empty($this->md_obj->createPublicRefId($this->parent_obj_id))) {
-                $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('public_ref_not_created'), true);
-            } elseif (!$this->md_obj->isPublicRefIdPublic()) {
-                $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('public_ref_not_public'), true);
-            } else {
-                $this->md_obj->publish();
-            }
-            $this->returnToExport();
-        }
-    }
 
     protected function initPublishForm(): ilPropertyFormGUI
     {
@@ -1027,24 +998,44 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         return $form;
     }
 
-    protected function updatePublish(): bool
+    protected function finalPublish(): void
     {
-        $form = $this->initPublishForm();
-
-        if ($form->checkInput()) {
-            foreach (array_keys($this->data->getParamsBySection('check_final')) as $name) {
-                $this->data->set($name, $form->getInput($name));
-            }
-            $this->data->write();
-            return true;
+        $this->checkAll();
+        if (!$this->ready) {
+            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('public_ref_not_created'), true);
+            $this->ctrl->redirect($this, 'declarePublish');
         }
 
-        $this->cmd = 'declarePublish';
-        $this->step = $this->getStepByCommand($this->cmd);
-        $form->setValuesByPost();
-        $this->showPage($form->getHTML());
-        return false;
+        if(!is_object($rights = $this->md_obj->getRights())) {
+            $rights = $this->md_obj->addRights();
+            $rights->save();
+        }
+
+        $license = $this->getSelectedLicense();
+        $available = $this->md_obj->getAvailableCCLicenses();
+        // set available new cc license
+        if (isset($available[$license])) {
+            $rights->setCopyrightAndOtherRestrictions("Yes");
+            $rights->setDescription($available[$license]);
+            $rights->update();
+        }
+        // remove old cc license
+        elseif (!empty($this->md_obj->getCCLicense())) {
+            $rights->setDescription('');
+            $rights->update();
+
+        }
+
+        if (empty($this->md_obj->createPublicRefId($this->parent_obj_id))) {
+            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('public_ref_not_created'), true);
+        } elseif (!$this->md_obj->isPublicRefIdPublic()) {
+            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('public_ref_not_public'), true);
+        } else {
+            $this->md_obj->publish();
+        }
+        $this->returnToExport();
     }
+
 
     #endregion
 }

@@ -51,7 +51,6 @@ class ilOERinFormData extends ilOERinFormParamList
             'ca_zitat' => ilOERinFormParam::TYPE_BOOLEAN,
             'ca_nichtkomm' => ilOERinFormParam::TYPE_BOOLEAN,
             'ca_quellen_check' => ilOERinFormParam::TYPE_BOOLEAN,
-            'ca_quellen_doku' => ilOERinFormParam::TYPE_BOOLEAN,
         ],
         'check_final' => [
             'cf_freigabe' => ilOERinFormParam::TYPE_HEAD,

@@ -31,8 +31,8 @@ pub_ref_id#:#OER-Kategorie
 pub_ref_id_info#:#Kategorie im öffentlichen Bereich, in welche die veröffentlichten Materialien verknüpft werden sollen. Die Rechtevoreinstellungen in dieser Kategorie müssen alle neuen Objekte für Anonymous lesbar machen!
 wizard#:#Assistent
 wizard_finish#:#Freigeben
-wizard_next#:#Weiter zu Schritt %s
-wizard_previous#:#Zurück zu Schritt %s
+wizard_next#:#Weiter
+wizard_previous#:#Zurück
 wizard_step#:#Schritt %s:
 oer_publishing#:#OER-Veröffentlichung
 check_rights#:#Prüfung auf Rechte Dritter
@@ -90,14 +90,12 @@ ca_fotos#:#Fotos
 ca_nichtoffen#:#Andere Lizenzen
 ca_zitat#:#Zitate
 ca_nichtkomm#:#Nichtkommerziell
-ca_quellen_check#:#Quellen
-ca_quellen_doku#:#Dokumentation
+ca_quellen_check#:#Quellen und Dokumentation
 ca_fotos_info#:#Bei Fotos habe ich, sofern möglich, den Lizenzhinweis gut sichtbar in unmittelbarer Nähe zu dem Foto angebracht.
 ca_nichtoffen_info#:#Sofern ich Material, das nicht unter einer offenen Lizenz steht, verwendet habe, habe ich dies gekennzeichnet und darauf hingewiesen, dass „soweit nicht anders gekennzeichnet, das Material unter der angegebenen Lizenz steht“.
 ca_zitat_info#:#Sofern ich mich in der Zitatschranke des § 51 UrhG bewege, dient das Zitat dem Zweck des neuen Kontextes bzw. es findet eine inhaltliche Auseinandersetzung statt.
 ca_nichtkomm_info#:#Sofern ich Material mit einer NC-Lizenz verwendet habe, ist meine Nutzung auch wirklich „nicht- kommerziell“ (Achtung: Dies könnte von den Gerichten auch für die Verwendung im universitären Rahmen bejaht werden).
-ca_quellen_check_info#:#Ich habe die Quellen des verwendeten Materials geprüft und bin der Auffassung, dass es sich um eine sichere Quelle handelt. Ich vertraue der Quelle derart, dass sie nicht bereits urheberrechtliche oder persönlichkeitsrechtliche Verstöße enthält. Ich bin mir ziemlich sicher, dass der Urheber dieses Material auch als OER herausgegeben hat.
-ca_quellen_doku_info#:#Dementsprechend habe ich die Quelle dokumentiert.
+ca_quellen_check_info#:#Ich habe die Quellen des verwendeten Materials überprüft und halte sie für zuverlässig. Ich vertraue den Quellen so weit, dass sie keine Urheberrechte oder Persönlichkeitsrechte verletzen. Ich habe alle verwendeten Quellen und Hilfsmittel nach bestem Wissen und Gewissen dokumentiert.
 sl_existing#:#Lizenzen enthaltener Werke
 sl_cc0#:#CC0
 sl_cc_by#:#CC BY
