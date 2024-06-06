@@ -232,10 +232,10 @@ class ilOERinFormPublishMD extends ilMD
     {
         $settings = ilMDSettings::_getInstance();
         if (is_object($lifecycle = $this->getLifecycle())) {
-            $sep = $author = "";
+            $sep = $author = '';
             foreach(($ids = $lifecycle->getContributeIds()) as $con_id) {
                 $md_con = $lifecycle->getContribute($con_id);
-                if ($md_con->getRole() == "Author") {
+                if ($md_con->getRole() == 'Author') {
                     foreach($ent_ids = $md_con->getEntityIds() as $ent_id) {
                         $md_ent = $md_con->getEntity($ent_id);
                         $author = $author . $sep . $md_ent->getEntity();
@@ -253,7 +253,7 @@ class ilOERinFormPublishMD extends ilMD
      */
     public function getCopyrightDescription(): string
     {
-        $copyright = "";
+        $copyright = '';
         if(is_object($rights = $this->getRights())) {
             $copyright = ilMDUtils::_parseCopyright($rights->getDescription());
         }
@@ -476,8 +476,8 @@ class ilOERinFormPublishMD extends ilMD
         $combination[6][5] = [false, false, false, false, false, false, false];
         $combination[6][6] = [false, false, false, false, false, false, false];
 
-        $mixedLicenses = array();
-        $map = array(
+        $mixedLicenses = [];
+        $map = [
             self::CC0 => 0,
             self::CC_BY => 1,
             self::CC_BY_SA => 2,
@@ -485,7 +485,7 @@ class ilOERinFormPublishMD extends ilMD
             self::CC_BY_ND => 4,
             self::CC_BY_NC_SA => 5,
             self::CC_BY_NC_ND => 6,
-        );
+        ];
         foreach ($inArray as $license) {
             if (isset($map[$license])) {
                 $mixedLicenses[] = $map[$license];

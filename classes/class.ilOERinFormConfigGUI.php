@@ -34,6 +34,7 @@ class ilOERinFormConfigGUI extends ilPluginConfigGUI
 
         switch ($this->ctrl->getNextClass()) {
             case 'ilpropertyformgui':
+                // needed for repository picker
                 $this->ctrl->forwardCommand($this->initBasicConfigurationForm());
                 break;
 
@@ -59,7 +60,6 @@ class ilOERinFormConfigGUI extends ilPluginConfigGUI
     protected function initBasicConfigurationForm(): ilPropertyFormGUI
     {
         $form = new ilPropertyFormGUI();
-        //$form->setTitle($this->plugin->txt('basic_configuration'));
         $form->setFormAction($this->ctrl->getFormAction($this));
 
         foreach (['base', 'help'] as $section) {

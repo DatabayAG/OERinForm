@@ -29,7 +29,8 @@ class ilOERinFormData extends ilOERinFormParamList
             'sl_cc_by_nc' => ilOERinFormParam::TYPE_BOOLEAN,
             'sl_cc_by_nc_sa' => ilOERinFormParam::TYPE_BOOLEAN,
             'sl_cc_by_nc_nd' => ilOERinFormParam::TYPE_BOOLEAN,
-            'sl_own_choice' => ilOERinFormParam::TYPE_HEAD
+            'sl_own_choice' => ilOERinFormParam::TYPE_HEAD,
+            'selected_license' => ilOERinFormParam::TYPE_TEXT
         ],
         'check_attrib' => [
             'ca_selbst' => ilOERinFormParam::TYPE_HEAD,
@@ -110,7 +111,8 @@ class ilOERinFormData extends ilOERinFormParamList
      */
     public function read(): void
     {
-        $query = "SELECT * FROM oerinf_data WHERE obj_id = " . $this->db->quote($this->obj_id, 'integer');
+        $query = "SELECT param_name, param_value FROM oerinf_data WHERE obj_id = "
+            . $this->db->quote($this->obj_id, 'integer');
         $res = $this->db->query($query);
         while($row = $this->db->fetchAssoc($res)) {
             $this->set($row['param_name'], $row['param_value']);
@@ -125,11 +127,11 @@ class ilOERinFormData extends ilOERinFormParamList
         foreach ($this->params as $param) {
             $this->db->replace(
                 'oerinf_data',
-                array(
-                    'obj_id' =>  array('integer', $this->obj_id),
-                    'param_name' => array('text', $param->name)
-                ),
-                array('param_value' => array('text', (string) $param->value))
+                [
+                    'obj_id' =>  ['integer', $this->obj_id],
+                    'param_name' => ['text', $param->name]
+                ],
+                ['param_value' => ['text', (string) $param->value]]
             );
         }
     }

@@ -134,7 +134,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
     protected function getStepByCommand(string $a_cmd): array
     {
         foreach ($this->steps as $step) {
-            if ($step['cmd'] == $a_cmd) {
+            if ($step['cmd'] ?? '' == $a_cmd) {
                 return $step;
             }
         }
@@ -173,17 +173,19 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         $this->checkAll();
 
         // show step list and determine the current step number
+
         $steps = [];
         $stepindex = 0;
         $stepnum = 1;
         for ($i = 0; $i < count($this->steps); $i++) {
             $step = $this->factory->listing()->workflow()->step(
                 sprintf($this->plugin->txt("wizard_step"), $i + 1),
-                $this->plugin->txt($this->steps[$i]['title_var']),
-                $this->ctrl->getLinkTarget($this, $this->steps[$i]['cmd'])
+                $this->plugin->txt($this->steps[$i]['title_var'] ?? ''),
+                $this->ctrl->getLinkTarget($this, $this->steps[$i]['cmd'] ?? '')
             );
-            $steps[] = $step->withStatus($this->checks[$i]['status'] ? $step::SUCCESSFULLY : $step::NOT_STARTED);
-            if ($this->steps[$i]['cmd'] == $this->cmd) {
+            $steps[] = $step->withStatus((
+                $this->checks[$i]['status'] ?? false) ? $step::SUCCESSFULLY : $step::NOT_STARTED);
+            if ($this->steps[$i]['cmd'] ?? '' == $this->cmd) {
                 $stepindex = $i;
                 $stepnum = $i + 1;
             }
@@ -193,7 +195,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $this->factory->listing()->workflow()->linear($this->plugin->txt('publish_oer'), $steps)
             ->withActive($stepindex)
         ];
-        if (!empty($help = $this->getHelpButton($this->step['help_id']))) {
+        if (!empty($help = $this->getHelpButton($this->step['help_id'] ?? ''))) {
             $right_components[] = $this->factory->legacy('<br>');
             $right_components[] = $help;
         }
@@ -202,16 +204,17 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 
 
         // show the main screen
+
         $tpl = $this->plugin->getTemplate("tpl.wizard_page.html");
         $tpl->setVariable("FORMACTION", $this->ctrl->getFormAction($this));
         $tpl->setVariable("FORMNAME", get_class($this));
         $tpl->setVariable("CONTENT", $a_content);
 
         // add step specific info and toolbar
-        if ($this->step['cmd']) {
+        if (!empty($this->step['cmd'])) {
 
-            $info = $this->plugin->txt($this->step['desc_var']);
-            if (is_array($this->checks[$stepindex]['messages'])) {
+            $info = $this->plugin->txt($this->step['desc_var'] ?? '');
+            if (!empty($this->checks[$stepindex]['messages']) && is_array($this->checks[$stepindex]['messages'])) {
                 foreach ($this->checks[$stepindex]['messages'] as $message) {
                     $info .= '<br />' . $this->getNotOkImage(16) . " " . $message;
                 }
@@ -219,9 +222,9 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $this->tpl->setOnScreenMessage('info', $info);
 
             $tb = new ilToolbarGUI();
-            if ($this->step['next_cmd'] and $stepnum == count($this->steps)) {
+            if (!empty($this->step['next_cmd']) and $stepnum == count($this->steps)) {
                 $button = ilSubmitButton::getInstance();
-                $button->setCaption(sprintf($this->plugin->txt('wizard_finish'), $stepnum + 1), false);
+                $button->setCaption($this->plugin->txt('wizard_finish'), false);
                 $button->setCommand($this->step['next_cmd']);
                 if ($this->ready) {
                     $button->setPrimary(true);
@@ -230,7 +233,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
                 }
 
                 $tb->addButtonInstance($button);
-            } elseif ($this->step['next_cmd']) {
+            } elseif (!empty($this->step['next_cmd'])) {
                 $button = ilSubmitButton::getInstance();
                 $button->setCaption(sprintf($this->plugin->txt('wizard_next'), $stepnum + 1), false);
                 $button->setCommand($this->step['next_cmd']);
@@ -272,16 +275,19 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
     }
 
     /**
-     * Check all wizarrd data
+     * Check all wizard data
      * Fills the checks array with results
      */
     protected function checkAll(): void
     {
+        /** @see ilOERinFormData::$param_list for value names */
         $d = $this->data->getAllValues();
+
+        // checks must be done in the order of the defined steps
         $this->checks = [];
         $ready = true;
 
-        // step 1
+        // step 1 (index 0)
         $ok = true;
         $messages = [];
         if (!($d['cr_schoepfung'] && (($d['cr_erschaffen'] && $d['cr_zustimmung']) || $d['cr_exklusiv']))) {
@@ -299,10 +305,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         // step 2
         $ok = true;
         $messages = [];
-        $license = $this->data->get('selected_license');
-        if (empty($license)) {
-            $license = $this->md_obj->getCCLicense();
-        }
+        $license = $this->getSelectedLicense();
         if (empty($license) || !in_array($license, $this->md_obj->ccMixer($this->data->getIncludedLicenses()))) {
             $ok = false;
             $ready = false;
@@ -591,7 +594,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 
             $ta = new ilTextAreaInputGUI(
                 $this->lng->txt("meta_description"),
-                "gen_description[" . $id . "][description]"
+                'gen_description_' . $id . '_description'
             );
             $ta->setCols(50);
             $ta->setRows(4);
@@ -762,12 +765,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
                 )
             );
             $md_lan->save();
-        }
-
-        foreach ($ids = $this->md_section->getDescriptionIds() as $id) {
-            $md_des = $this->md_section->getDescription($id);
-            $md_des->setDescription($form->getInput('gen_description_' . $id . '_description'));
-            $md_des->update();
         }
 
 

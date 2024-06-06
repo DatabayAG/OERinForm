@@ -19,9 +19,6 @@ class ilOERinFormConfig extends ilOERinFormParamList
             'check_attrib' => ilOERinFormParam::TYPE_URL,
             'declare_publish' => ilOERinFormParam::TYPE_URL,
         ],
-        'mail' => [
-            'config_mail' => ilOERinFormParam::TYPE_HEAD,
-        ]
     ];
 
 
@@ -30,7 +27,7 @@ class ilOERinFormConfig extends ilOERinFormParamList
      */
     public function read(): void
     {
-        $query = "SELECT * FROM oerinf_config";
+        $query = "SELECT param_name, param_value FROM oerinf_config";
         $res = $this->db->query($query);
         while($row = $this->db->fetchAssoc($res)) {
             $this->set((string) $row['param_name'], $row['param_value']);
@@ -45,8 +42,8 @@ class ilOERinFormConfig extends ilOERinFormParamList
         foreach ($this->params as $param) {
             $this->db->replace(
                 'oerinf_config',
-                array('param_name' => array('text', $param->name)),
-                array('param_value' => array('text', (string) $param->value))
+                ['param_name' => ['text', $param->name]],
+                ['param_value' => ['text', (string) $param->value]]
             );
         }
     }

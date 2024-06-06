@@ -24,7 +24,7 @@ class ilOERinFormUIHookGUI extends ilUIHookPluginGUI
     public function modifyGUI(
         string $a_comp,
         string $a_part,
-        array $a_par = array()
+        array $a_par = []
     ): void {
 
         if ($a_part == 'tabs' && $this->ctrl->getCmdClass() == 'ilexportgui') {

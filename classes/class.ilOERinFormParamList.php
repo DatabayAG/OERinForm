@@ -51,8 +51,12 @@ abstract class ilOERinFormParamList
     public function getParamsBySection($section): array
     {
         $params = [];
-        foreach ($this->param_list[$section] as $name => $type) {
-            $params[$name] = $this->params[$name];
+        if (isset($this->param_list[$section]) && is_array($this->param_list[$section])) {
+            foreach ($this->param_list[$section] as $name => $type) {
+                if (isset($this->params[$name])) {
+                    $params[$name] = $this->params[$name];
+                }
+            }
         }
         return $params;
     }
@@ -62,7 +66,7 @@ abstract class ilOERinFormParamList
      */
     public function getAllValues(): array
     {
-        $result = array();
+        $result = [];
         foreach ($this->params as $name => $param) {
             $result[$name] = $param->value;
         }
@@ -88,8 +92,7 @@ abstract class ilOERinFormParamList
      */
     public function set(string $name, $value = null): void
     {
-        $param = $this->params[$name];
-
+        $param = $this->params[$name] ?? null;
         if (isset($param)) {
             $param->setValue($value);
         }

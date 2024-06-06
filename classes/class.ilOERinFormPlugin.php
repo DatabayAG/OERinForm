@@ -10,7 +10,7 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
 
     public function getPluginName(): string
     {
-        return "OERinForm";
+        return 'OERinForm';
     }
 
     public static function getInstance(): self
@@ -20,7 +20,7 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
         if (!isset(self::$instance)) {
             /** @var ilComponentFactory $factory */
             /** @var self $plugin */
-            $factory = $DIC["component.factory"];
+            $factory = $DIC['component.factory'];
             $plugin = $factory->getPlugin('oerinf');
             self::$instance = $plugin;
         }

@@ -7,7 +7,7 @@ class ilOERInFormUriInputGUI extends ilUriInputGUI
 {
     public function checkInput(): bool
     {
-        if (!$this->getRequired() && trim($this->str($this->getPostVar())) == "") {
+        if (!$this->getRequired() && trim($this->str($this->getPostVar())) == '') {
             return true;
         }
 

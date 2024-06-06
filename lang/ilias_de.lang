@@ -11,7 +11,8 @@ publish_oer#:#OER-Veröffentlichung
 publish#:#Veröffentlichen...
 unpublish#:#Zurückziehen
 republish#:#Aktualisieren...
-label_status#:#Status
+label_status#:#Status:
+label_licence#:#Lizenz:
 label_published#:#Veröffentlicht
 label_ready#:#Nicht veröffentlicht
 label_private#:#Nicht veröffentlicht
@@ -115,7 +116,7 @@ sl_cc_by_nc_info#:#Das Werk kann frei genutzt und verändert werden, sofern der*
 sl_cc_by_nc_sa_info#:#Das Werk kann frei genutzt werden, sofern der*die Urherber*in genannt und das Werk nicht kommerziell genutzt werden, sowie das neue Werk unter derselben CC-Lizenz wie das Ursprungswerk veröffentlicht wird.
 sl_cc_by_nc_nd_info#:#Das Werk kann frei genutzt werden, sofern der*die Urherber*in genannt und das Werk nicht kommerziell genutzt werden. Es darf jedoch nicht verändert werden.
 sl_other_info#:#Das Material einthält auch Werke unter anderen Lizenzen. Für diese müssen Sie selbst prüfen, ob sie mit einer CC-Lizenz vereinbar sind.
-sl_own_choice_info#:#Wählen Sie hier, die Lizenz, unter der Sie das Material veröffentlichen wollen. Die Lizenzen "CC0", "CC BY" und "CC BY-SA" gelten allgemein als OER-konform und werden von CreativeCommons.org als Free Cultural Works anerkannt.
+sl_own_choice_info#:#Wählen Sie hier die Lizenz, unter der Sie das Material veröffentlichen wollen. Eine bereits in den Metadaten festgelege Lizenz ist hier voreingestellt. Wenn Sie die Auswahl hier ändern, wird das erst bei der Freigabe im letzten Schritt verändert. Die Lizenzen "CC0", "CC BY" und "CC BY-SA" gelten allgemein als OER-konform und werden von CreativeCommons.org als Free Cultural Works anerkannt.
 cf_freigabe#:#Einverständniserklärung und Freigabe
 cf_konsequenzen#:#Bleibende Lizenz
 cf_bereit#:#Veröffentlichung

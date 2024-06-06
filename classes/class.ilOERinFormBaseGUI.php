@@ -19,9 +19,9 @@ class ilOERinFormBaseGUI
     protected \ILIAS\Refinery\Factory $refinery;
 
     protected int $parent_ref_id = 0;
-    protected int $parent_obj_id;
-    protected string $parent_type;
-    protected string $parent_gui_class;
+    protected int $parent_obj_id = 0;
+    protected string $parent_type = '';
+    protected string $parent_gui_class = '';
 
     public function __construct()
     {
@@ -63,7 +63,7 @@ class ilOERinFormBaseGUI
         $url = $this->config->get($a_help_id);
         if (!empty($url)) {
             $link = $this->factory->link()->bulky(
-                $this->factory->symbol()->glyph()->help("#"),
+                $this->factory->symbol()->glyph()->help(),
                 $this->lng->txt('help'),
                 new \ILIAS\Data\URI($url)
             )->withOpenInNewViewport(true);
