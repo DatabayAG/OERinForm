@@ -11,11 +11,11 @@ class ilOERinFormParam
     //
     public const TYPE_HEAD = 'head';
     public const TYPE_TEXT = 'text';
+    public const TYPE_LONGTEXT = 'longtext';
     public const TYPE_BOOLEAN = 'bool';
-    public const TYPE_INT = 'int';
-    public const TYPE_FLOAT = 'float';
     public const TYPE_CATEGORY = 'category';
     public const TYPE_URL = 'url';
+    public const TYPE_MAIL = 'mail';
 
     //
     // Parameter properties
@@ -49,20 +49,16 @@ class ilOERinFormParam
     {
         switch($this->type) {
             case self::TYPE_URL:
-                $this->value = empty($value) ? null : (string) $value;
-                break;
+            case self::TYPE_LONGTEXT:
             case self::TYPE_TEXT:
-                $this->value = (string) $value;
+            case self::TYPE_MAIL:
+            $this->value = empty($value) ? null : (string) $value;
                 break;
             case self::TYPE_BOOLEAN:
                 $this->value = (bool) $value;
                 break;
-            case self::TYPE_INT:
             case self::TYPE_CATEGORY:
-                $this->value = (int) $value;
-                break;
-            case self::TYPE_FLOAT:
-                $this->value = (float) $value;
+                $this->value = empty($value) ? null : (int) $value;
                 break;
         }
     }
@@ -88,30 +84,33 @@ class ilOERinFormParam
                 $item->getExplorerGUI()->setSelectableTypes(['cat']);
                 $item->setValue($this->value);
                 break;
-            case self::TYPE_INT:
-                $item = new ilNumberInputGUI($title, $postvar);
-                $item->allowDecimals(false);
-                $item->setSize(10);
-                $item->setValue($this->value);
-                break;
             case self::TYPE_BOOLEAN:
                 $item = new ilCheckboxInputGUI($title, $postvar);
                 $item->setChecked((bool) $this->value);
                 break;
-            case self::TYPE_FLOAT:
-                $item = new ilNumberInputGUI($title, $postvar);
-                $item->allowDecimals(true);
-                $item->setSize(10);
-                $item->setValue($this->value);
-                break;
             case self::TYPE_URL:
                 $item = new ilOERInFormUriInputGUI($title, $postvar);
                 $item->setRequired(false);
-                $item->setValue(empty($this->value) ? null : $this->value);
+                $item->setMaxLength(255);
+                $item->setValue($this->value);
+                break;
+            case self::TYPE_MAIL:
+                $item = new ilEMailInputGUI($title, $postvar);
+                $item->setRequired(false);
+                $item->setMaxLength(255);
+                $item->setValue((string) $this->value);
+                break;
+            case self::TYPE_LONGTEXT:
+                $item = new ilTextAreaInputGUI($title, $postvar);
+                $item->setCols(60);
+                $item->setRows(10);
+                $item->setMaxNumOfChars(4000);
+                $item->setValue((string) $this->value);
                 break;
             case self::TYPE_TEXT:
             default:
                 $item = new ilTextInputGUI($title, $postvar);
+                $item->setMaxLength(255);
                 $item->setValue($this->value);
                 break;
         }

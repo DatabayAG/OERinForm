@@ -139,3 +139,18 @@ label_keywords#:#Stichworte:
 label_authors#:#Autor(en):
 config_help#:#Hilfe-Seiten
 config_help_info#:#Hier können Sie Urls angeben, die bei der Veröffentlichung eines Inhalts als Hilfeseiten verlinkt werden. Sie öffnen sich in einem neuen Fenster.
+noti_head#:#Benachrichtigung
+noti_check#:#Abgestimmt
+noti_check_info#:#Die Veröffentlichung des Materials ist mit meinem Vorgesetzten bzw. der Arbeitsgruppe abgestimmt. Zur Bestätigung trage ich die E-Mail-Adresse der mir vorgesetzten Person ein, die bei Fertigstellung der Freigabe über die Veröffentlichung informiert wird.
+noti_mail#:#E-Mail-Adresse
+fail_notification#:# Sie müssen die Veröffentlichung abstimmen und eine E-Mail-Adresse zur Benachrichtigung eingeben.
+mail_notification#:#Benachrichtigung
+mail_notification_info#:#Konfigurieren Sie hier die Vorlage für eine E-Mail, die versendet wird, sobald ein Inhalt zur Veröffentlichung im OER-Assistenten freigegeben wird. Die Empfänger-Adresse wird im Assistenten beim ersten Schritt eingegeben.
+config_mail#:#Benachrichtigung über Veröffentlichung
+noti_subject#:#Betreff
+noti_subject_default#:#OER-Veröffentlichung
+noti_message#:#Inhalt
+noti_message_default#:#Dies ist eine automatisch generierte Mail, die Sie über die Veröffentlichung von Material aus Ihrem Arbeitsumfeld informiert. Den Inhalt finden Sie unter folgendem Link:\n[CONTENT_LINK]\n\nDer Inhalt wurde veröffentlicht von:[PUBLISHER_NAME] <[PUBLISHER_EMAIL]>\n\nWenn Sie mit der Veröffentlichung nicht einverstanden sind, wenden Sie sich bitte an die Autor*innen oder in letzter Instanz an den ILIAS-Support.
+mail_content_link#:#Link zum veröffentlichten Inhalt
+mail_publisher_name#:#Titel, Vor- und Nachname der Person, die den Inhalt veröffentlicht
+mail_publisher_email#:#E-Mail-Adresse der Person, die den Inhalt veröffentlicht

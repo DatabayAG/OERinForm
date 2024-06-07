@@ -105,7 +105,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $this->returnToObject();
         }
 
-        $cmd = $this->ctrl->getCmd('checkRights');
+        $cmd = $this->ctrl->getCmd('describeMeta');
         $this->determineStep($cmd);
         $this->ctrl->saveParameter($this, 'ref_id');
         $this->ctrl->setParameter($this, 'last_step', $this->stepindex);
@@ -302,7 +302,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $button = ilSubmitButton::getInstance();
             $button->setCaption($this->plugin->txt('wizard_finish'), false);
             $button->setCommand('finalPublish');
-            $button->setDisabled($this->ready);
+            $button->setDisabled(!$this->ready);
             $tb->addButtonInstance($button);
 
         } elseif ($this->stepindex <= count($this->steps)) {
@@ -363,6 +363,11 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $ok = false;
             $ready = false;
             $messages[] = $this->plugin->txt('fail_metadata');
+        }
+        if (!$d['noti_check'] || empty($d['noti_mail'])) {
+            $ok = false;
+            $ready = false;
+            $messages[] = $this->plugin->txt('fail_notification');
         }
         $this->checks[] = ['status' => $ok, 'messages' => $messages];
 
@@ -579,15 +584,18 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         $this->showPage($form->getHTML());
     }
 
+    /**
+     * @see \ilMDEditorGUI::updateQuickEdit
+     */
     protected function saveMeta($redirect_cmd = 'describeMeta'): void
     {
         $form = $this->initMetaEditForm();
         if (!$form->checkInput()) {
-            $this->tpl->setOnScreenMessage('failure', $this->lng->txt('title_required'));
             $form->setValuesByPost();
             $this->showPage($form->getHTML());
             return;
         }
+
 
         // General values, should already be created in the form creation
         $general = $this->md_obj->getGeneral();
@@ -618,11 +626,21 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 
 
         // Description
+        $first_description = null;
         foreach ($ids = $general->getDescriptionIds() as $id) {
             $md_des = $general->getDescription($id);
             $md_des->setDescription($form->getInput('gen_description_' . $id . '_description'));
             $md_des->update();
+            if (!isset($first_description)) {
+                $first_description = $form->getInput('gen_description_' . $id . '_description');
+            }
         }
+
+        // Copy title and first description to the object data
+        $object = ilObjectFactory::getInstanceByObjId($this->parent_obj_id);
+        $object->setTitle($form->getInput('gen_title'));
+        $object->setDescription((string) $first_description);
+        $object->update();
 
         // Keyword
         $keywords = [];
@@ -723,6 +741,11 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
                 }
             }
         }
+
+        foreach (array_keys($this->data->getParamsBySection('notification')) as $name) {
+            $this->data->set($name, $form->getInput($name));
+        }
+        $this->data->write();
 
         if ($redirect_cmd == 'describeMeta') {
             $this->tpl->setOnScreenMessage('success', $this->lng->txt('saved_successfully'), true);
@@ -849,6 +872,14 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         }
         $form->addItem($tlt);
 
+        // notification
+        $params = $this->data->getParamsBySection('notification');
+        $head = $params['noti_head']->getFormItem();
+        $form->addItem($head);
+        $check = $params['noti_check']->getFormItem();
+        $form->addItem($check);
+        $mail = $params['noti_mail']->getFormItem();
+        $check->addSubItem($mail);
 
         $form->setTitle($this->lng->txt("description"));
         $form->setFormAction($this->ctrl->getFormAction($this));
@@ -894,7 +925,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 
 
     /**
-     * @return array{mo: string, d: string, h: string, m: string, s: string}
+     * @see \ilMDEditorGUI::getTltPostVars
      */
     protected function getTltPostVars(): array
     {

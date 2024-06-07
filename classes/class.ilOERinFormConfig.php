@@ -19,6 +19,11 @@ class ilOERinFormConfig extends ilOERinFormParamList
             'check_attrib' => ilOERinFormParam::TYPE_URL,
             'declare_publish' => ilOERinFormParam::TYPE_URL,
         ],
+        'mail' => [
+            'config_mail' => ilOERinFormParam::TYPE_HEAD,
+            'noti_subject' => ilOERinFormParam::TYPE_TEXT,
+            'noti_message' => ilOERinFormParam::TYPE_LONGTEXT
+        ]
     ];
 
 
@@ -46,5 +51,18 @@ class ilOERinFormConfig extends ilOERinFormParamList
                 ['param_value' => ['text', (string) $param->value]]
             );
         }
+    }
+
+
+    public function getNotificationSubject(): string
+    {
+        return $this->get('noti_subject') ?? $this->plugin->txt('noti_subject_default');
+
+    }
+
+    public function getNotificationMessage(): string
+    {
+        return $this->get('noti_message') ??
+            str_replace('\n', "\n", $this->plugin->txt('noti_message_default'));
     }
 }

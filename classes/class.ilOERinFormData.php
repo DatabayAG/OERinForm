@@ -6,6 +6,11 @@
 class ilOERinFormData extends ilOERinFormParamList
 {
     protected array $param_list = [
+        'notification' => [
+            'noti_head' => ilOERinFormParam::TYPE_HEAD,
+            'noti_check' => ilOERinFormParam::TYPE_BOOLEAN,
+            'noti_mail' => ilOERinFormParam::TYPE_MAIL,
+        ],
         'check_rights' => [
             'cr_berechtigung' => ilOERinFormParam::TYPE_HEAD,
             'cr_schoepfung' => ilOERinFormParam::TYPE_BOOLEAN,
