@@ -150,7 +150,9 @@ config_mail#:#Benachrichtigung über Veröffentlichung
 noti_subject#:#Betreff
 noti_subject_default#:#OER-Veröffentlichung
 noti_message#:#Inhalt
-noti_message_default#:#Dies ist eine automatisch generierte Mail, die Sie über die Veröffentlichung von Material aus Ihrem Arbeitsumfeld informiert. Den Inhalt finden Sie unter folgendem Link:\n[CONTENT_LINK]\n\nDer Inhalt wurde veröffentlicht von:[PUBLISHER_NAME] <[PUBLISHER_EMAIL]>\n\nWenn Sie mit der Veröffentlichung nicht einverstanden sind, wenden Sie sich bitte an die Autor*innen oder in letzter Instanz an den ILIAS-Support.
+noti_message_default#:#Dies ist eine automatisch generierte Mail, die Sie über die Veröffentlichung von Material aus Ihrem Arbeitsumfeld informiert. Den Inhalt finden Sie unter folgendem Link:\n[CONTENT_LINK]\n\nDer Inhalt wurde veröffentlicht von: [PUBLISHER_NAME] <[PUBLISHER_EMAIL]>\n\nWenn Sie mit der Veröffentlichung nicht einverstanden sind, wenden Sie sich bitte an die Autor*innen oder in letzter Instanz an den ILIAS-Support.
 mail_content_link#:#Link zum veröffentlichten Inhalt
 mail_publisher_name#:#Titel, Vor- und Nachname der Person, die den Inhalt veröffentlicht
 mail_publisher_email#:#E-Mail-Adresse der Person, die den Inhalt veröffentlicht
+publish_notification_failed#:#Das Objekt wurde veröffentlicht, aber die Benachrichtigung konnte nicht versandt werden.
+published_and_notified#:#Das Objekt wurde veröffentlicht und die Benachrichtigung versandt.

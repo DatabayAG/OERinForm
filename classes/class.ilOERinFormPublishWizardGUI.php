@@ -9,8 +9,11 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
     #region basic
 
     protected ilLocatorGUI $locator;
+    protected ilObjUser $user;
+
     protected ilOERinFormData $data;
     protected ilOERinFormPublishMD $md_obj;
+    protected ilOERinFormMimeMailNotification $notification;
     protected ilMDSettings $md_settings;
 
     /**
@@ -89,9 +92,11 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 
         global $DIC;
         $this->locator = $DIC['ilLocator'];
+        $this->user = $DIC->user();
         $this->data = $this->plugin->getData($this->parent_obj_id);
         $this->md_obj = new ilOERinFormPublishMD($this->parent_obj_id, $this->parent_obj_id, $this->parent_type);
         $this->md_settings = ilMDSettings::_getInstance();
+        $this->notification = new ilOERinFormMimeMailNotification();
     }
 
 
@@ -1031,39 +1036,48 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 
     protected function finalPublish(): void
     {
+        // finally check if all steps are passed
         $this->checkAll();
         if (!$this->ready) {
             $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('public_ref_not_created'), true);
             $this->ctrl->redirect($this, 'declarePublish');
         }
 
-        if(!is_object($rights = $this->md_obj->getRights())) {
-            $rights = $this->md_obj->addRights();
-            $rights->save();
-        }
-
+        // set the new cc license
         $license = $this->getSelectedLicense();
         $available = $this->md_obj->getAvailableCCLicenses();
-        // set available new cc license
         if (isset($available[$license])) {
+            if(!is_object($rights = $this->md_obj->getRights())) {
+                $rights = $this->md_obj->addRights();
+                $rights->save();
+            }
             $rights->setCopyrightAndOtherRestrictions("Yes");
             $rights->setDescription($available[$license]);
             $rights->update();
         }
-        // remove old cc license
-        elseif (!empty($this->md_obj->getCCLicense())) {
-            $rights->setDescription('');
-            $rights->update();
 
-        }
-
-        if (empty($this->md_obj->createPublicRefId($this->parent_obj_id))) {
+        // create the reference in the public category
+        $public_ref_id = $this->md_obj->createPublicRefId($this->parent_obj_id);
+        if (!isset($public_ref_id)) {
             $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('public_ref_not_created'), true);
-        } elseif (!$this->md_obj->isPublicRefIdPublic()) {
-            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('public_ref_not_public'), true);
-        } else {
-            $this->md_obj->publish();
+            $this->returnToExport();
         }
+
+        if (!$this->md_obj->isPublicRefIdPublic()) {
+            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('public_ref_not_public'), true);
+            $this->returnToExport();
+        }
+
+        // create the files for publishing by an external oai service
+        $this->md_obj->publish();
+
+        // send the notification
+        if (!$this->notification->sendPublishNotification($public_ref_id, (string) $this->data->get('noti_mail'), $this->user)) {
+            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('publish_notification_failed'), true);
+            $this->returnToExport();
+        }
+
+        $this->tpl->setOnScreenMessage('success', $this->plugin->txt('published_and_notified'), true);
         $this->returnToExport();
     }
 
