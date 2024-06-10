@@ -27,9 +27,17 @@ class ilOERinFormUIHookGUI extends ilUIHookPluginGUI
         array $a_par = []
     ): void {
 
-        if ($a_part == 'tabs' && $this->ctrl->getCmdClass() == 'ilexportgui') {
-            $gui = new ilOERinFormPublishGUI();
-            $gui->addPublishInfo();
+
+        if ($a_part == 'tabs') {
+
+            $class = $this->ctrl->getCmdClass();
+            $cmd = $this->ctrl->getCmd();
+
+            if ($class == 'ilexportgui' || $class == 'iltestexportgui' || $class == 'ilquestionpoolexportgui'
+            || ($class == 'ilobjscorm2004learningmodulegui' && $cmd == 'listExportFiles')) {
+                $gui = new ilOERinFormPublishGUI();
+                $gui->addPublishInfo();
+            }
         }
     }
 }

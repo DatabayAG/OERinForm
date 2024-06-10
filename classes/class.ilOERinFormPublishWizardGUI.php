@@ -780,7 +780,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         if($this->md_obj->getObjType() != 'sess') {
             $ti->setRequired(true);
         }
-        $ti->setValue($general->getTitle());
+        $ti->setValue(empty($general->getTitle()) ? ilObject::_lookupTitle($this->parent_obj_id) : $general->getTitle());
         $form->addItem($ti);
 
         // description(s)
@@ -802,7 +802,8 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         }
 
         // language(s)
-        $first = "";
+        $first = true;
+        $first_lang = $this->lng->getLangKey();
         $options = ilMDLanguageItem::_getLanguages();
         foreach($ids = $general->getLanguageIds() as $id) {
             $md_lan = $general->getLanguage($id);
@@ -816,6 +817,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         if ($first) {
             $si = new ilSelectInputGUI($this->lng->txt("meta_language"), "gen_language_language");
             $si->setOptions($options);
+            $si->setValue($this->lng->getLangKey());
             $form->addItem($si);
         }
 
