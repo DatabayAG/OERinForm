@@ -27,6 +27,19 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
         return self::$instance;
     }
 
+    public function uninstall(): bool
+    {
+        if (parent::uninstall()) {
+            foreach (['oerinf_config','oerinf_data'] as $table) {
+                if ($this->db->tableExists($table)) {
+                    $this->db->dropTable($table);
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Check if the object type is allowed for publishing as oer
      */
