@@ -18,10 +18,8 @@ class ilOERinFormPublishMD extends ilMD
     public const STATUS_PUBLIC = 'published';
     public const STATUS_BROKEN = 'broken';
 
-
     /** list of supported publishing formats */
     protected array $publishFormats = ['oai_ilias', 'oai_dc', 'oai_lom-eaf'];
-
 
     protected ilTree $tree;
     protected ilAccessHandler $access;
@@ -43,7 +41,6 @@ class ilOERinFormPublishMD extends ilMD
 
         $this->plugin = ilOERinFormPlugin::getInstance();
     }
-
 
     /**
      * Get the ref_id of the published the object
@@ -128,7 +125,6 @@ class ilOERinFormPublishMD extends ilMD
             . sprintf('%09d', $this->getRBACId()) . '-' . $format . '.xml';
     }
 
-
     /**
      * Get the publishing date
      */
@@ -184,7 +180,6 @@ class ilOERinFormPublishMD extends ilMD
                 return $this->plugin->txt("label_broken");
         }
     }
-
 
     /**
      * Get a comma separated list of keywords
@@ -470,7 +465,6 @@ class ilOERinFormPublishMD extends ilMD
                 $mixedLicenses[] = $map[$license];
             }
         }
-
 
         for ($i = 0; $i < count($mixedLicenses); $i++) {
             for ($n = 0; $n < 7; $n++) {

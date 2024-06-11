@@ -40,8 +40,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
      */
     protected bool $ready = false;
 
-
-
     /**
     * Definition of the wizard steps
     */
@@ -99,14 +97,13 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         $this->notification = new ilOERinFormMimeMailNotification();
     }
 
-
     /**
      * Execute a command (main entry point)
      */
     public function executeCommand(): void
     {
         if (!$this->access->checkAccess('write', '', $this->parent_ref_id)) {
-            $this->tpl->setOnScreenMessage('failure', $this->lng->txt("permission_denied"), true);
+            $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_FAILURE, $this->lng->txt("permission_denied"), true);
             $this->returnToObject();
         }
 
@@ -207,7 +204,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         }
     }
 
-
     /**
      * Propare a propery form for the current step
      * Opening and close tags are provided by the toolbar
@@ -221,7 +217,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         return $form;
     }
 
-
     /**
      * Get the selected license with existing license as default
      */
@@ -233,7 +228,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         }
         return (string) $license;
     }
-
 
     /**
      * Show the complete ILIAS page with the wizard content
@@ -293,7 +287,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
                 $info .= '<br />' . $this->getNotOkImage(16) . " " . $message;
             }
         }
-        $this->tpl->setOnScreenMessage('info', $info);
+        $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_INFO, $info);
 
         // add the navigation toolbar
         $tb = new ilToolbarGUI();
@@ -461,7 +455,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $this->data->write();
 
             if ($redirect_cmd == 'checkRights') {
-                $this->tpl->setOnScreenMessage('success', $this->lng->txt("saved_successfully"), true);
+                $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->lng->txt("saved_successfully"), true);
             }
             $this->ctrl->redirect($this, $redirect_cmd);
         } else {
@@ -499,7 +493,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             }
             $this->data->write();
             if ($redirect_cmd == 'selectLicense') {
-                $this->tpl->setOnScreenMessage('success', $this->lng->txt("saved_successfully"), true);
+                $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->lng->txt("saved_successfully"), true);
             }
             $this->ctrl->redirect($this, $redirect_cmd);
         } else {
@@ -601,7 +595,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             return;
         }
 
-
         // General values, should already be created in the form creation
         $general = $this->md_obj->getGeneral();
         $general->setTitle($form->getInput('gen_title'));
@@ -628,7 +621,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             );
             $md_lan->save();
         }
-
 
         // Description
         $first_description = null;
@@ -753,7 +745,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         $this->data->write();
 
         if ($redirect_cmd == 'describeMeta') {
-            $this->tpl->setOnScreenMessage('success', $this->lng->txt('saved_successfully'), true);
+            $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->lng->txt('saved_successfully'), true);
         }
         $this->ctrl->redirect($this, $redirect_cmd);
     }
@@ -870,7 +862,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         $ta->setValue($this->md_obj->getAuthors());
         $form->addItem($ta);
 
-
         // typical learning time
         $tlt = new ilTypicalLearningTimeInputGUI($this->lng->txt("meta_typical_learning_time"), "tlt");
         $edu = $this->md_obj->getEducational();
@@ -930,7 +921,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         exit;
     }
 
-
     /**
      * @see \ilMDEditorGUI::getTltPostVars
      */
@@ -944,7 +934,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             's' => ilTypicalLearningTimeInputGUI::POST_NAME_SECOND
         ];
     }
-
 
     #endregion
     #region check_attrib
@@ -976,7 +965,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             $this->data->write();
 
             if ($redirect_cmd == 'checkAttrib') {
-                $this->tpl->setOnScreenMessage('success', $this->lng->txt("saved_successfully"), true);
+                $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->lng->txt("saved_successfully"), true);
             }
             $this->ctrl->redirect($this, $redirect_cmd);
         }
@@ -1002,7 +991,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
             }
             $this->data->write();
             if ($redirect_cmd == 'declarePublish') {
-                $this->tpl->setOnScreenMessage('success', $this->lng->txt("saved_successfully"), true);
+                $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->lng->txt("saved_successfully"), true);
             }
             $this->ctrl->redirect($this, $redirect_cmd);
         }
@@ -1010,7 +999,6 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         $form->setValuesByPost();
         $this->showPage($form->getHTML());
     }
-
 
     protected function initPublishForm(): ilPropertyFormGUI
     {
@@ -1041,7 +1029,7 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         // finally check if all steps are passed
         $this->checkAll();
         if (!$this->ready) {
-            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('public_ref_not_created'), true);
+            $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_FAILURE, $this->plugin->txt('public_ref_not_created'), true);
             $this->ctrl->redirect($this, 'declarePublish');
         }
 
@@ -1061,12 +1049,12 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
         // create the reference in the public category
         $public_ref_id = $this->md_obj->createPublicRefId($this->parent_obj_id);
         if (!isset($public_ref_id)) {
-            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('public_ref_not_created'), true);
+            $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_FAILURE, $this->plugin->txt('public_ref_not_created'), true);
             $this->returnToExport();
         }
 
         if (!$this->md_obj->isPublicRefIdPublic()) {
-            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('public_ref_not_public'), true);
+            $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_FAILURE, $this->plugin->txt('public_ref_not_public'), true);
             $this->returnToExport();
         }
 
@@ -1075,14 +1063,13 @@ class ilOERinFormPublishWizardGUI extends ilOERinFormBaseGUI
 
         // send the notification
         if (!$this->notification->sendPublishNotification($public_ref_id, (string) $this->data->get('noti_mail'), $this->user)) {
-            $this->tpl->setOnScreenMessage('failure', $this->plugin->txt('publish_notification_failed'), true);
+            $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_FAILURE, $this->plugin->txt('publish_notification_failed'), true);
             $this->returnToExport();
         }
 
-        $this->tpl->setOnScreenMessage('success', $this->plugin->txt('published_and_notified'), true);
+        $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->plugin->txt('published_and_notified'), true);
         $this->returnToExport();
     }
-
 
     #endregion
 }

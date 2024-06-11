@@ -109,15 +109,13 @@ class ilOERinFormData extends ilOERinFormParamList
         return $licenses;
     }
 
-
     /**
      * Read the data from the database
      */
     public function read(): void
     {
-        $query = "SELECT param_name, param_value FROM oerinf_data WHERE obj_id = "
-            . $this->db->quote($this->obj_id, 'integer');
-        $res = $this->db->query($query);
+        $query = "SELECT param_name, param_value FROM oerinf_data WHERE obj_id = %s";
+        $res = $this->db->queryF($query, ['integer'], [$this->obj_id]);
         while($row = $this->db->fetchAssoc($res)) {
             $this->set($row['param_name'], $row['param_value']);
         }

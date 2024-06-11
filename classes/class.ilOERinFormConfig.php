@@ -26,7 +26,6 @@ class ilOERinFormConfig extends ilOERinFormParamList
         ]
     ];
 
-
     /**
      * Read the configuration from the database
      */
@@ -35,7 +34,7 @@ class ilOERinFormConfig extends ilOERinFormParamList
         $query = "SELECT param_name, param_value FROM oerinf_config";
         $res = $this->db->query($query);
         while($row = $this->db->fetchAssoc($res)) {
-            $this->set((string) $row['param_name'], $row['param_value']);
+            $this->set($row['param_name'], $row['param_value']);
         }
     }
 
@@ -52,7 +51,6 @@ class ilOERinFormConfig extends ilOERinFormParamList
             );
         }
     }
-
 
     public function getNotificationSubject(): string
     {

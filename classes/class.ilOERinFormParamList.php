@@ -19,7 +19,6 @@ abstract class ilOERinFormParamList
     /** @var ilOERinFormParam[] name => ilOERinFormParam  */
     protected array $params = [];
 
-
     /**
      * Constructor
      * Initialize and read the parameters
@@ -42,7 +41,6 @@ abstract class ilOERinFormParamList
         }
         $this->read();
     }
-
 
     /**
      * Get the array of all parameters for a section
@@ -97,7 +95,6 @@ abstract class ilOERinFormParamList
             $param->setValue($value);
         }
     }
-
 
     /**
      * Read the parameters from the database

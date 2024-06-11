@@ -1,5 +1,10 @@
 <?php
 
+use \ILIAS\UI\Factory AS UiFactory;
+use \ILIAS\UI\Renderer AS UiRenderer;
+use \ILIAS\HTTP\Services AS HttpServices;
+use \ILIAS\Refinery\Factory AS RefineryFactory;
+
 /**
  * Base class for publishing GUIs
  */
@@ -13,10 +18,10 @@ class ilOERinFormBaseGUI
     protected ilGlobalTemplateInterface $tpl;
     protected ilOERinFormPlugin $plugin;
     protected ilOERinFormConfig $config;
-    protected \ILIAS\UI\Factory $factory;
-    protected \ILIAS\UI\Renderer $renderer;
-    protected \ILIAS\HTTP\Services $http;
-    protected \ILIAS\Refinery\Factory $refinery;
+    protected UiFactory $factory;
+    protected UiRenderer $renderer;
+    protected HttpServices $http;
+    protected RefineryFactory $refinery;
 
     protected int $parent_ref_id = 0;
     protected int $parent_obj_id = 0;
@@ -53,7 +58,6 @@ class ilOERinFormBaseGUI
         $this->parent_gui_class = ilObjectFactory::getClassByType($this->parent_type) . 'GUI';
     }
 
-
     /**
      * Get the ui component of a help button for a screen
      * The help id is equal to the name of the config parameter with the help url
@@ -77,34 +81,32 @@ class ilOERinFormBaseGUI
      */
     protected function getExportUrl(): string
     {
-
-
         $parent_gui = strtolower(ilObjectFactory::getClassByType($this->parent_type)). 'gui';
 
         switch ($this->parent_type) {
             case 'lm':
-                $this->ctrl->saveParameterByClass('ilexportgui', 'ref_id');
-                return $this->ctrl->getLinkTargetByClass(['illmeditorgui', $parent_gui, 'ilexportgui']);
+                $this->ctrl->saveParameterByClass(ilExportGUI::class, 'ref_id');
+                return $this->ctrl->getLinkTargetByClass([ilLMEditorGUI::class, $parent_gui, ilExportGUI::class]);
 
             case 'glo':
-                $this->ctrl->saveParameterByClass('ilexportgui', 'ref_id');
-                return $this->ctrl->getLinkTargetByClass(['ilglossaryeditorgui', $parent_gui, 'ilexportgui']);
+                $this->ctrl->saveParameterByClass(ilExportGUI::class, 'ref_id');
+                return $this->ctrl->getLinkTargetByClass([ilGlossaryEditorGUI::class, $parent_gui, ilExportGUI::class]);
 
             case 'sahs':
-                $this->ctrl->saveParameterByClass('ilobjscorm2004learningmodulegui', 'ref_id');
-                return $this->ctrl->getLinkTargetByClass(['ilsahseditgui', 'ilobjscorm2004learningmodulegui'], 'export');
+                $this->ctrl->saveParameterByClass(ilObjSCORM2004LearningModuleGUI::class, 'ref_id');
+                return $this->ctrl->getLinkTargetByClass([ilSAHSEditGUI::class, ilObjSCORM2004LearningModuleGUI::class], 'export');
 
             case 'tst':
-                $this->ctrl->saveParameterByClass('iltestexportgui', 'ref_id');
-                return $this->ctrl->getLinkTargetByClass(['ilrepositorygui', $parent_gui, 'iltestexportgui']);
+                $this->ctrl->saveParameterByClass(ilTestExportGUI::class, 'ref_id');
+                return $this->ctrl->getLinkTargetByClass([ilRepositoryGUI::class, $parent_gui, ilTestExportGUI::class]);
 
             case 'qpl':
-                $this->ctrl->saveParameterByClass('ilquestionpoolexportgui', 'ref_id');
-                return $this->ctrl->getLinkTargetByClass(['ilrepositorygui', $parent_gui, 'ilquestionpoolexportgui']);
+                $this->ctrl->saveParameterByClass(ilQuestionPoolExportGUI::class, 'ref_id');
+                return $this->ctrl->getLinkTargetByClass([ilRepositoryGUI::class, $parent_gui, ilQuestionPoolExportGUI::class]);
 
             default:
-                $this->ctrl->saveParameterByClass('ilexportgui', 'ref_id');
-                return $this->ctrl->getLinkTargetByClass(['ilrepositorygui', $parent_gui, 'ilexportgui']);
+                $this->ctrl->saveParameterByClass(ilExportGUI::class, 'ref_id');
+                return $this->ctrl->getLinkTargetByClass([ilRepositoryGUI::class, $parent_gui, ilExportGUI::class]);
         }
     }
 

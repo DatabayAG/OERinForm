@@ -14,14 +14,14 @@ class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
     public function executeCommand(): void
     {
         if (!$this->access->checkAccess('write', '', $this->parent_ref_id)) {
-            $this->tpl->setOnScreenMessage('failure', $this->lng->txt("permission_denied"), true);
+            $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_FAILURE, $this->lng->txt("permission_denied"), true);
             $this->returnToObject();
         }
 
         $cmd = $this->ctrl->getCmd();
         switch ($cmd) {
             case 'unpublish':
-                $this->$cmd();
+                $this->unpublish();
                 break;
 
             default:
@@ -30,7 +30,6 @@ class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
         }
     }
 
-
     /**
      * Reject the publishing
      */
@@ -38,10 +37,9 @@ class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
     {
         $meta = new ilOERinFormPublishMD($this->parent_obj_id, $this->parent_obj_id, $this->parent_type);
         $meta->unpublish();
-        $this->tpl->setOnScreenMessage('success', $this->plugin->txt('msg_meta_unpublished'), true);
+        $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->plugin->txt('msg_meta_unpublished'), true);
         $this->returnToExport();
     }
-
 
     /**
      * Add the publishing info to the export page
@@ -74,12 +72,10 @@ class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
             $listing[$this->plugin->txt('label_licence')] = $copyright;
         }
 
-
         $right_components = [
             $this->factory->panel()->standard($this->plugin->txt('publish_oer'),
                 $this->factory->listing()->descriptive($listing))
         ];
-
 
         // Button with publishing action
 
@@ -88,18 +84,18 @@ class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
             switch ($meta->getPublishStatus()) {
                 case ilOERinFormPublishMD::STATUS_PRIVATE:
                 case ilOERinFormPublishMD::STATUS_READY:
-                    $this->ctrl->setParameterByClass('ilOERinFormPublishWizardGUI', 'ref_id', $this->parent_ref_id);
+                    $this->ctrl->setParameterByClass(ilOERinFormPublishWizardGUI::class, 'ref_id', $this->parent_ref_id);
                     $right_components[] = $this->factory->button()->standard(
                         $this->plugin->txt('publish'),
-                        $this->ctrl->getLinkTargetByClass(['ilUIPluginRouterGUI', 'ilOERinFormPublishWizardGUI'])
+                        $this->ctrl->getLinkTargetByClass([ilUIPluginRouterGUI::class, ilOERinFormPublishWizardGUI::class])
                     );
                     break;
 
                 case ilOERinFormPublishMD::STATUS_PUBLIC:
-                    $this->ctrl->setParameterByClass('ilOERinFormPublishWizardGUI', 'ref_id', $this->parent_ref_id);
+                    $this->ctrl->setParameterByClass(ilOERinFormPublishWizardGUI::class, 'ref_id', $this->parent_ref_id);
                     $right_components[] = $this->factory->button()->standard(
                         $this->plugin->txt('republish'),
-                        $this->ctrl->getLinkTargetByClass(['ilUIPluginRouterGUI', 'ilOERinFormPublishWizardGUI'])
+                        $this->ctrl->getLinkTargetByClass([ilUIPluginRouterGUI::class, ilOERinFormPublishWizardGUI::class])
                     );
                     break;
 
@@ -107,7 +103,7 @@ class ilOERinFormPublishGUI extends ilOERinFormBaseGUI
                     $this->ctrl->saveParameter($this, 'ref_id');
                     $right_components[] = $this->factory->button()->standard(
                         $this->plugin->txt('unpublish'),
-                        $this->ctrl->getLinkTargetByClass(['ilUIPluginRouterGUI', 'ilOERinFormPublishGUI'], 'unpublish')
+                        $this->ctrl->getLinkTargetByClass([ilUIPluginRouterGUI::class, ilOERinFormPublishGUI::class], 'unpublish')
                     );
                     break;
             }

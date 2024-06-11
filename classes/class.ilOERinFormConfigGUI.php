@@ -34,7 +34,7 @@ class ilOERinFormConfigGUI extends ilPluginConfigGUI
         $this->tabs->addTab('mail', $this->plugin->txt('mail_notification'), $this->ctrl->getLinkTarget($this, 'configureMail'));
 
         switch ($this->ctrl->getNextClass()) {
-            case 'ilpropertyformgui':
+            case strtolower(ilPropertyFormGUI::class):
                 // needed for repository picker
                 $this->ctrl->forwardCommand($this->initBasicConfigurationForm());
                 break;
@@ -88,7 +88,7 @@ class ilOERinFormConfigGUI extends ilPluginConfigGUI
             }
             $this->config->write();
 
-            $this->tpl->setOnScreenMessage('success', $this->lng->txt('settings_saved'), true);
+            $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->lng->txt('settings_saved'), true);
             $this->ctrl->redirect($this, 'configure');
         } else {
             $this->tabs->activateTab('basic');
@@ -102,7 +102,7 @@ class ilOERinFormConfigGUI extends ilPluginConfigGUI
         $form = $this->initMailConfigurationForm();
 
         $this->tabs->activateTab('mail');
-        $this->tpl->setOnScreenMessage('info', $this->plugin->txt('mail_notification_info'));
+        $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_INFO, $this->plugin->txt('mail_notification_info'));
         $this->tpl->setContent($form->getHTML());
     }
 
@@ -122,14 +122,12 @@ class ilOERinFormConfigGUI extends ilPluginConfigGUI
         $form->getItemByPostVar('noti_subject')->setValue($this->config->getNotificationSubject());
         $form->getItemByPostVar('noti_message')->setValue($this->config->getNotificationMessage());
 
-
         $this->lng->loadLanguageModule('mail');
 
         $placeholders = new ilManualPlaceholderInputGUI(
             $this->lng->txt('mail_form_placeholders_label'),
             'noti_message'
         );
-        $placeholders->setInstructionText('sdfsfsdf');
         $placeholders->addPlaceholder('CONTENT_LINK', $this->plugin->txt('mail_content_link'));
         $placeholders->addPlaceholder('PUBLISHER_NAME', $this->plugin->txt('mail_publisher_name'));
         $placeholders->addPlaceholder('PUBLISHER_EMAIL', $this->plugin->txt('mail_publisher_email'));
@@ -138,7 +136,6 @@ class ilOERinFormConfigGUI extends ilPluginConfigGUI
         $form->addCommandButton('saveMailSettings', $this->lng->txt('save'));
         return $form;
     }
-
 
     protected function SaveMailSettings(): void
     {
@@ -149,7 +146,7 @@ class ilOERinFormConfigGUI extends ilPluginConfigGUI
             }
             $this->config->write();
 
-            $this->tpl->setOnScreenMessage('success', $this->lng->txt('settings_saved'), true);
+            $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->lng->txt('settings_saved'), true);
             $this->ctrl->redirect($this, 'configureMail');
         } else {
             $this->tabs->activateTab('mail');

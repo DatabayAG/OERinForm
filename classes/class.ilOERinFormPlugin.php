@@ -8,11 +8,6 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
     protected static ilOERinFormPlugin $instance;
     protected ilOERinFormConfig $config;
 
-    public function getPluginName(): string
-    {
-        return 'OERinForm';
-    }
-
     public static function getInstance(): self
     {
         global $DIC;
@@ -48,12 +43,10 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
         return in_array($type, ['file','lm','htlm','sahs','glo','wiki', 'tst', 'qpl']);
     }
 
-
     public function getData(int $obj_id): ilOERinFormData
     {
         return new ilOERinFormData($this, $obj_id);
     }
-
 
     public function getConfig(): ilOERinFormConfig
     {
@@ -62,5 +55,4 @@ class ilOERinFormPlugin extends ilUserInterfaceHookPlugin
         }
         return $this->config;
     }
-
 }
